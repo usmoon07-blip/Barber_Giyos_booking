@@ -36,29 +36,52 @@ function formatAppointment(appointment, lang = 'uz') {
   const serviceName =
     lang === 'ru' && appointment.service.nameRu ? appointment.service.nameRu : appointment.service.name;
 
+  const payment = text.payments[appointment.paymentMethod] || text.payments.CASH;
+
   return [
     `💈 <b>${text.bookingLine.barber}:</b> ${appointment.barber.name}`,
     `✂️ <b>${text.bookingLine.service}:</b> ${serviceName}`,
     `📅 <b>${text.bookingLine.date}:</b> ${formatDate(dateStr, lang)}`,
     `🕐 <b>${text.bookingLine.time}:</b> ${appointment.startTime} — ${appointment.endTime}`,
     `💰 <b>${text.bookingLine.price}:</b> ${formatPrice(appointment.totalPrice, lang)}`,
+    `${payment.slice(0, 2)} <b>${text.bookingLine.payment}:</b> ${payment.slice(2).trim()}` +
+      (appointment.isPaid ? ` — ${text.paid}` : ''),
   ].join('\n');
+}
+
+/** Karta orqali to'lamoqchi mijozga karta ma'lumotlarini beradi. */
+function formatCardDetails(settings, lang = 'uz') {
+  const text = t(lang);
+  if (!settings.cardNumber) return null;
+
+  const lines = [text.cardDetails, ''];
+  lines.push(`<code>${settings.cardNumber}</code>`);
+  if (settings.cardHolder) lines.push(`👤 ${settings.cardHolder}`);
+  if (settings.cardBank) lines.push(`🏦 ${settings.cardBank}`);
+  lines.push('', `<i>${text.cardHint}</i>`);
+
+  return lines.join('\n');
 }
 
 const NotificationService = {
   attachBot,
   sendMessage,
   formatAppointment,
+  formatCardDetails,
 
   /** Mijozga bron qabul qilingani haqida xabar + "Yo'lga tushdim" tugmasi. */
-  async notifyClientBookingCreated(appointment) {
+  async notifyClientBookingCreated(appointment, settings = null) {
     const lang = appointment.user.language || 'uz';
     const text = t(lang);
+
+    const cardBlock =
+      appointment.paymentMethod === 'CARD' && settings ? formatCardDetails(settings, lang) : null;
 
     const body = [
       text.bookingCreated,
       '',
       formatAppointment(appointment, lang),
+      ...(cardBlock ? ['', cardBlock] : []),
       '',
       text.seeYouSoon,
     ].join('\n');

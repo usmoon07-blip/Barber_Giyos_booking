@@ -111,6 +111,11 @@ export const STATUS_LABELS = {
   CANCELLED: 'Bekor qilingan',
 };
 
+export const PAYMENT_LABELS = {
+  CASH: '💵 Naqd',
+  CARD: '💳 Karta',
+};
+
 export const CATEGORY_LABELS = {
   HAIR: 'Soch',
   BEARD: 'Soqol',

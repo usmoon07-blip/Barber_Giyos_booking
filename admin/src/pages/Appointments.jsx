@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import api from '../api';
 import { useAdmin } from '../context/AdminContext';
-import { Empty, Loading, STATUS_LABELS, formatDate, formatMoney, todayStr } from '../components/ui';
+import {
+  Empty,
+  Loading,
+  STATUS_LABELS,
+  formatDate,
+  formatMoney,
+  todayStr,
+} from '../components/ui';
 
 const STATUSES = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'];
 
@@ -15,7 +22,14 @@ export default function Appointments() {
   const [barbers, setBarbers] = useState([]);
   const [busyId, setBusyId] = useState(null);
 
-  const [filters, setFilters] = useState({ status: '', barberId: '', date: '', search: '' });
+  const [filters, setFilters] = useState({
+    status: '',
+    barberId: '',
+    date: '',
+    search: '',
+    paymentMethod: '',
+    isPaid: '',
+  });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -50,6 +64,31 @@ export default function Appointments() {
       const updated = await api.updateAppointmentStatus(appointment.id, status);
       setItems((current) => current.map((item) => (item.id === updated.id ? updated : item)));
       showToast(`Holat o'zgartirildi: ${STATUS_LABELS[status]}`, 'success');
+    } catch (error) {
+      showToast(error.message, 'error');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const togglePaid = async (appointment) => {
+    setBusyId(appointment.id);
+    try {
+      const updated = await api.setAppointmentPayment(appointment.id, { isPaid: !appointment.isPaid });
+      setItems((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+      showToast(updated.isPaid ? "To'landi deb belgilandi" : "To'lov bekor qilindi", 'success');
+    } catch (error) {
+      showToast(error.message, 'error');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const changePaymentMethod = async (appointment, paymentMethod) => {
+    setBusyId(appointment.id);
+    try {
+      const updated = await api.setAppointmentPayment(appointment.id, { paymentMethod });
+      setItems((current) => current.map((item) => (item.id === updated.id ? updated : item)));
     } catch (error) {
       showToast(error.message, 'error');
     } finally {
@@ -127,6 +166,26 @@ export default function Appointments() {
           onChange={(event) => setFilter('date', event.target.value)}
         />
 
+        <select
+          className="field__input"
+          value={filters.paymentMethod}
+          onChange={(event) => setFilter('paymentMethod', event.target.value)}
+        >
+          <option value="">Barcha to'lovlar</option>
+          <option value="CASH">💵 Naqd</option>
+          <option value="CARD">💳 Karta</option>
+        </select>
+
+        <select
+          className="field__input"
+          value={filters.isPaid}
+          onChange={(event) => setFilter('isPaid', event.target.value)}
+        >
+          <option value="">To'langan va to'lanmagan</option>
+          <option value="true">✅ To'langan</option>
+          <option value="false">⏳ To'lanmagan</option>
+        </select>
+
         <input
           className="field__input"
           placeholder="Ism yoki telefon..."
@@ -134,13 +193,20 @@ export default function Appointments() {
           onChange={(event) => setFilter('search', event.target.value)}
         />
 
-        {filters.status || filters.barberId || filters.date || filters.search ? (
+        {filters.status || filters.barberId || filters.date || filters.search || filters.paymentMethod || filters.isPaid ? (
           <button
             type="button"
             className="btn btn--secondary"
             onClick={() => {
               setPage(1);
-              setFilters({ status: '', barberId: '', date: '', search: '' });
+              setFilters({
+                status: '',
+                barberId: '',
+                date: '',
+                search: '',
+                paymentMethod: '',
+                isPaid: '',
+              });
             }}
           >
             Tozalash
@@ -163,6 +229,7 @@ export default function Appointments() {
                     <th>Sana</th>
                     <th>Vaqt</th>
                     <th>Narx</th>
+                    <th>To'lov</th>
                     <th>Holat</th>
                     <th>Amallar</th>
                   </tr>
@@ -194,6 +261,28 @@ export default function Appointments() {
                         <div className="cell-muted">{appointment.endTime} gacha</div>
                       </td>
                       <td className="cell-strong">{formatMoney(appointment.totalPrice)}</td>
+                      <td>
+                        <select
+                          className="field__input"
+                          style={{ minHeight: 32, fontSize: 13, width: 118, marginBottom: 6 }}
+                          value={appointment.paymentMethod}
+                          disabled={busyId === appointment.id}
+                          onChange={(event) => changePaymentMethod(appointment, event.target.value)}
+                        >
+                          <option value="CASH">💵 Naqd</option>
+                          <option value="CARD">💳 Karta</option>
+                        </select>
+                        <button
+                          type="button"
+                          className={`pay-tag ${appointment.isPaid ? 'pay-tag--paid' : 'pay-tag--unpaid'}`}
+                          style={{ cursor: 'pointer', border: 'none' }}
+                          disabled={busyId === appointment.id}
+                          onClick={() => togglePaid(appointment)}
+                          title="Bosib holatni o'zgartiring"
+                        >
+                          {appointment.isPaid ? "✅ To'langan" : "⏳ To'lanmagan"}
+                        </button>
+                      </td>
                       <td>
                         <span className={`status status--${appointment.status}`}>
                           {STATUS_LABELS[appointment.status]}

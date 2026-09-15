@@ -74,11 +74,14 @@ export const api = {
 
   getDashboard: () => request('/dashboard'),
   getStats: () => request('/stats'),
+  getReport: (from, to) => request(`/reports${query({ from, to })}`),
   getSchedule: (date) => request(`/schedule${query({ date })}`),
 
   getAppointments: (params) => request(`/appointments${query(params)}`),
   updateAppointmentStatus: (id, status) =>
     request(`/appointments/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  setAppointmentPayment: (id, data) =>
+    request(`/appointments/${id}/payment`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteAppointment: (id) => request(`/appointments/${id}`, { method: 'DELETE' }),
 
   getBarbers: () => request('/barbers'),

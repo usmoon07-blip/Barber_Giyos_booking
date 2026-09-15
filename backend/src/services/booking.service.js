@@ -26,7 +26,7 @@ const BookingService = {
    *  1) tekshiruv va yozuv bitta Serializable tranzaksiyada bajariladi;
    *  2) bazada @@unique([barberId, date, startTime]) cheklovi qo'shimcha himoya beradi.
    */
-  async createAppointment({ userId, barberId, serviceId, date, startTime, note }) {
+  async createAppointment({ userId, barberId, serviceId, date, startTime, note, paymentMethod }) {
     if (!isValidDateStr(date)) throw ApiError.badRequest('Sana formati noto\'g\'ri', 'INVALID_DATE');
     if (!isValidTimeStr(startTime)) throw ApiError.badRequest('Vaqt formati noto\'g\'ri', 'INVALID_TIME');
 
@@ -66,6 +66,15 @@ const BookingService = {
       throw ApiError.badRequest('Vaqt noto\'g\'ri tanlangan', 'INVALID_SLOT');
     }
 
+    const method = paymentMethod === 'CARD' ? 'CARD' : 'CASH';
+
+    if (method === 'CARD' && !settings.cardPaymentEnabled) {
+      throw ApiError.badRequest("Karta orqali to'lov hozircha mavjud emas", 'CARD_DISABLED');
+    }
+    if (method === 'CASH' && !settings.cashPaymentEnabled) {
+      throw ApiError.badRequest("Naqd to'lov hozircha mavjud emas", 'CASH_DISABLED');
+    }
+
     const appointmentData = {
       userId: Number(userId),
       barberId: Number(barberId),
@@ -75,6 +84,7 @@ const BookingService = {
       endTime,
       totalPrice: service.price,
       status: 'PENDING',
+      paymentMethod: method,
       note: note ? String(note).slice(0, 300) : null,
     };
 

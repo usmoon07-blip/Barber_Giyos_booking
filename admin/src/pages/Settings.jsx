@@ -15,6 +15,12 @@ const TEXT_FIELDS = [
   { key: 'logoUrl', label: 'Logo havolasi (URL)', placeholder: 'https://...' },
 ];
 
+const CARD_FIELDS = [
+  { key: 'cardNumber', label: 'Karta raqami', placeholder: '8600 1234 5678 9012' },
+  { key: 'cardHolder', label: 'Karta egasining ismi', placeholder: 'GIYOS ABDULLAYEV' },
+  { key: 'cardBank', label: 'Bank / karta turi', placeholder: 'Uzcard · Kapitalbank' },
+];
+
 export default function Settings() {
   const { showToast, setShopName } = useAdmin();
 
@@ -43,6 +49,9 @@ export default function Settings() {
     try {
       const payload = {
         ...Object.fromEntries(TEXT_FIELDS.map(({ key }) => [key, form[key] || null])),
+        ...Object.fromEntries(CARD_FIELDS.map(({ key }) => [key, form[key] || null])),
+        cardPaymentEnabled: Boolean(form.cardPaymentEnabled),
+        cashPaymentEnabled: Boolean(form.cashPaymentEnabled),
         about: form.about || null,
         aboutRu: form.aboutRu || null,
         locationLat: form.locationLat === '' ? null : form.locationLat,
@@ -112,6 +121,57 @@ export default function Settings() {
             onChange={(event) => update('aboutRu', event.target.value)}
           />
         </div>
+
+        <h2 className="section-title">💳 To'lov ma'lumotlari</h2>
+
+        <p style={{ fontSize: 13.5, color: 'var(--muted)', margin: '0 0 16px' }}>
+          Karta raqami mijozga Mini App'da va botda ko'rinadi. Mijoz uni bir bosishda nusxa oladi.
+        </p>
+
+        <label className="checkbox" style={{ marginBottom: 12 }}>
+          <input
+            type="checkbox"
+            checked={Boolean(form.cashPaymentEnabled)}
+            onChange={(event) => update('cashPaymentEnabled', event.target.checked)}
+          />
+          <span>💵 Naqd pul orqali to'lash mumkin</span>
+        </label>
+
+        <label className="checkbox" style={{ marginBottom: 18 }}>
+          <input
+            type="checkbox"
+            checked={Boolean(form.cardPaymentEnabled)}
+            onChange={(event) => update('cardPaymentEnabled', event.target.checked)}
+          />
+          <span>💳 Karta orqali to'lash mumkin</span>
+        </label>
+
+        {form.cardPaymentEnabled ? (
+          <>
+            {CARD_FIELDS.map(({ key, label, placeholder }) => (
+              <div className="field" key={key}>
+                <label className="field__label">{label}</label>
+                <input
+                  className="field__input"
+                  value={form[key] || ''}
+                  placeholder={placeholder}
+                  onChange={(event) => update(key, event.target.value)}
+                />
+              </div>
+            ))}
+
+            {form.cardNumber ? (
+              <div className="card-preview">
+                <div className="card-preview__label">Mijoz shunday ko'radi:</div>
+                <div className="card-preview__number">{form.cardNumber}</div>
+                {form.cardHolder ? (
+                  <div className="card-preview__holder">{form.cardHolder}</div>
+                ) : null}
+                {form.cardBank ? <div className="card-preview__holder">🏦 {form.cardBank}</div> : null}
+              </div>
+            ) : null}
+          </>
+        ) : null}
 
         <h2 className="section-title">Joylashuv (Telegramda xarita yuborish uchun)</h2>
 

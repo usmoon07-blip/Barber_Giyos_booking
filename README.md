@@ -170,12 +170,13 @@ Kirish ma'lumotlari — `.env` faylidagi `ADMIN_USERNAME` va `ADMIN_PASSWORD`.
 | Bo'lim          | Imkoniyatlar                                                 |
 | --------------- | ------------------------------------------------------------ |
 | 📊 Dashboard    | Bugungi bronlar, tushum, mijozlar, diagramma                 |
-| 📅 Bronlar      | Filtrlash, holatni o'zgartirish, o'chirish                   |
+| 📅 Bronlar      | Filtrlash, holat va to'lovni belgilash, o'chirish             |
+| 💰 Hisobot      | Kunlik/oylik tushum, naqd va karta ajratilgan, CSV eksport    |
 | 💈 Barberlar    | Qo'shish, tahrirlash, faol/faol emas, o'chirish              |
 | ✂️ Xizmatlar    | Narx, tavsif, rasm, kategoriya, davomiylik                   |
 | 🕐 Ish jadvali  | Har bir barber uchun 7 kunlik jadval va dam olish kunlari    |
 | 👥 Mijozlar     | Ro'yxat va qidiruv                                           |
-| ⚙️ Sozlamalar   | Nom, telefon, manzil, Instagram, bron qoidalari              |
+| ⚙️ Sozlamalar   | Nom, telefon, manzil, Instagram, **karta raqami**, qoidalar  |
 
 Admin panelni alohida portda (tahrir qilish uchun) ishga tushirish:
 
@@ -186,7 +187,58 @@ npm run dev        # http://localhost:5174
 
 ---
 
-## 🤖 5. Bot imkoniyatlari
+## 💰 5. To'lov va hisobot
+
+### To'lov turlari
+
+Mijoz bron qilayotganda **naqd pul** yoki **karta** ni tanlaydi.
+
+Karta tanlansa, unga darhol karta raqamingiz ko'rsatiladi — Mini App'da
+(bir bosishda nusxa olish tugmasi bilan) va botga yuborilgan xabarda ham.
+
+**Karta raqamini kiritish:** Admin Panel → **Sozlamalar** → **💳 To'lov
+ma'lumotlari** bo'limi. U yerda:
+
+- karta raqami (`8600 1234 5678 9012`)
+- karta egasining ismi
+- bank / karta turi (Uzcard, Humo va h.k.)
+- naqd va karta to'lovlarini alohida yoqish/o'chirish
+
+### Tushumni belgilash
+
+Bronlar sahifasida har bir bron yonida:
+
+- **to'lov turi** (naqd / karta) — kerak bo'lsa o'zgartirasiz
+  (mijoz karta deb tanlab, keyin naqd bergan bo'lsa)
+- **⏳ To'lanmagan / ✅ To'langan** tugmasi — bosib belgilaysiz
+
+### Hisobot sahifasi
+
+**Admin Panel → 💰 Hisobot**
+
+| Ko'rsatkich            | Ma'nosi                                             |
+| ---------------------- | --------------------------------------------------- |
+| Tushum (bajarilgan ish)| Holati «Yakunlangan» bronlar summasi                |
+| 💵 Naqd                 | «To'langan» deb belgilangan naqd to'lovlar          |
+| 💳 Karta                | «To'langan» deb belgilangan karta to'lovlar         |
+| ⏳ Kutilayotgan         | Hali bajarilmagan (kelgusi) bronlar summasi         |
+| ⏳ To'lanmagan          | Ish bajarilgan, lekin pul belgilanmagan             |
+| O'rtacha chek          | Tushum ÷ bajarilgan xizmatlar soni                  |
+
+Oraliqlar: **Bugun · Oxirgi 7 kun · Kelasi 7 kun · Shu oy · O'tgan oy ·
+Ixtiyoriy oraliq**.
+
+Quyida uchta jadval: **kunlar**, **barberlar** va **xizmatlar** bo'yicha
+taqsimot. **⬇ Excel (CSV)** tugmasi hisobotni faylga yuklab beradi — uni
+Excel yoki Google Sheets'da ochasiz.
+
+> 💡 Tushum to'g'ri chiqishi uchun xizmat ko'rsatilgandan keyin bronni
+> **«Yakunlangan»** deb belgilang va pulni olganingizda **«To'langan»** tugmasini
+> bosing. Shunda kunlik va oylik raqamlar aniq bo'ladi.
+
+---
+
+## 🤖 6. Bot imkoniyatlari
 
 | Tugma / buyruq      | Nima qiladi                                    |
 | ------------------- | ---------------------------------------------- |
@@ -209,12 +261,13 @@ npm run dev        # http://localhost:5174
 ### Mijozga keladigan xabarlar
 
 - ✅ Bron qabul qilingani (+ "Yo'lga tushdim" va "Bekor qilish" tugmalari)
+- 💳 Karta tanlangan bo'lsa — karta raqami (Telegramda bosib nusxa olinadi)
 - ⏰ Bron vaqtidan 2 soat oldin eslatma (sozlamalardan o'zgartiriladi)
 - ✅/🎉/❌ Admin holatni o'zgartirganda
 
 ---
 
-## 🔒 6. Xavfsizlik
+## 🔒 7. Xavfsizlik
 
 - Mini App har bir so'rovda Telegram imzolagan `initData` yuboradi, server uni
   bot tokeni bilan **HMAC-SHA256** orqali tekshiradi — soxta so'rov o'tmaydi
@@ -225,7 +278,7 @@ npm run dev        # http://localhost:5174
 
 ---
 
-## 🛠 7. Foydali buyruqlar
+## 🛠 8. Foydali buyruqlar
 
 ```bash
 # Bazani ko'rish / tahrirlash (brauzerda ochiladi)
@@ -244,7 +297,7 @@ cd miniapp && npm run dev      # http://localhost:5173
 
 ---
 
-## ❓ 8. Tez-tez uchraydigan muammolar
+## ❓ 9. Tez-tez uchraydigan muammolar
 
 **"Can't reach database server"**
 Neon bazasi uxlab qolgan bo'lishi mumkin. [console.neon.tech](https://console.neon.tech)

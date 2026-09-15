@@ -17,11 +17,13 @@ router.get('/auth/me', adminController.me);
 // Dashboard
 router.get('/dashboard', adminController.getDashboard);
 router.get('/stats', adminController.getStats);
+router.get('/reports', adminController.getReport);
 router.get('/schedule', adminController.getDaySchedule);
 
 // Bronlar
 router.get('/appointments', adminController.listAppointments);
 router.patch('/appointments/:id/status', adminController.updateAppointmentStatus);
+router.patch('/appointments/:id/payment', adminController.setAppointmentPayment);
 router.delete('/appointments/:id', adminController.deleteAppointment);
 
 // Barberlar

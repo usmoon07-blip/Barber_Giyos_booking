@@ -6,6 +6,7 @@ import { Toast } from './ui';
 const LINKS = [
   { to: '/', label: 'Dashboard', icon: '📊', end: true },
   { to: '/appointments', label: 'Bronlar', icon: '📅' },
+  { to: '/reports', label: 'Hisobot', icon: '💰' },
   { to: '/barbers', label: 'Barberlar', icon: '💈' },
   { to: '/services', label: 'Xizmatlar', icon: '✂️' },
   { to: '/working-hours', label: 'Ish jadvali', icon: '🕐' },

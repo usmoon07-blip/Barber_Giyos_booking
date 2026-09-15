@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../api';
 import BarberAvatar from '../components/BarberAvatar';
+import PaymentPicker from '../components/PaymentPicker';
 import SafeImage from '../components/SafeImage';
 import { EmptyState, ErrorState, Loader } from '../components/States';
 import { CheckIcon } from '../components/Icons';
@@ -16,7 +17,7 @@ const STEP_TIME = 3;
 const STEP_CONFIRM = 4;
 
 export default function Booking() {
-  const { text, language, user, setUser, showToast } = useApp();
+  const { text, language, user, setUser, showToast, payment } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -40,6 +41,7 @@ export default function Booking() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('CASH');
   const [formError, setFormError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [created, setCreated] = useState(null);
@@ -197,6 +199,7 @@ export default function Booking() {
         note: note.trim() || undefined,
         name: trimmedName,
         phone: trimmedPhone,
+        paymentMethod,
       });
 
       haptic('success');
@@ -251,11 +254,29 @@ export default function Booking() {
               {created.startTime} — {created.endTime}
             </span>
           </div>
+          <div className="summary__row">
+            <span className="summary__label">{text.booking.payment}</span>
+            <span className="summary__value">
+              {created.paymentMethod === 'CARD' ? `💳 ${text.booking.card}` : `💵 ${text.booking.cash}`}
+            </span>
+          </div>
           <div className="summary__row summary__row--total">
             <span className="summary__label">{text.booking.price}</span>
             <span className="summary__value">{formatPrice(created.totalPrice, language)}</span>
           </div>
         </div>
+
+        {created.paymentMethod === 'CARD' && payment?.cardNumber ? (
+          <div className="card-box" style={{ width: '100%', marginBottom: 20, textAlign: 'left' }}>
+            <div className="card-box__label">{text.booking.cardNumber}</div>
+            <div className="card-box__number">{payment.cardNumber}</div>
+            {payment.cardHolder ? (
+              <div className="card-box__holder">
+                {text.booking.cardHolder}: <b>{payment.cardHolder}</b>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         <div style={{ width: '100%', display: 'grid', gap: 10 }}>
           <button type="button" className="btn btn--primary" onClick={() => navigate('/profile')}>
@@ -492,11 +513,19 @@ export default function Booking() {
               <span className="summary__label">{text.booking.duration}</span>
               <span className="summary__value">{text.common.minutes(service?.duration || 0)}</span>
             </div>
+            <div className="summary__row">
+              <span className="summary__label">{text.booking.payment}</span>
+              <span className="summary__value">
+                {paymentMethod === 'CARD' ? `💳 ${text.booking.card}` : `💵 ${text.booking.cash}`}
+              </span>
+            </div>
             <div className="summary__row summary__row--total">
               <span className="summary__label">{text.booking.price}</span>
               <span className="summary__value">{formatPrice(service?.price || 0, language)}</span>
             </div>
           </div>
+
+          <PaymentPicker value={paymentMethod} onChange={setPaymentMethod} />
 
           <h2 className="step-title" style={{ fontSize: 17 }}>
             {text.booking.yourData}

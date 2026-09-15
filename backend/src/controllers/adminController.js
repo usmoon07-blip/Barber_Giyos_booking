@@ -10,12 +10,21 @@ const SiteSettingModel = require('../models/SiteSetting');
 const UserModel = require('../models/User');
 const WorkingHourModel = require('../models/WorkingHour');
 const NotificationService = require('../services/notification.service');
+const ReportService = require('../services/report.service');
 const { ApiError, asyncHandler } = require('../utils/errors');
 const { safeCompare } = require('../utils/telegramAuth');
 const { serializeAppointment } = require('../utils/serialize');
-const { todayStr, toDbDate, addDays, isValidTimeStr, toMinutes } = require('../utils/time');
+const {
+  todayStr,
+  toDbDate,
+  addDays,
+  isValidTimeStr,
+  isValidDateStr,
+  toMinutes,
+} = require('../utils/time');
 
 const STATUSES = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'];
+const PAYMENT_METHODS = ['CASH', 'CARD'];
 const CATEGORIES = ['HAIR', 'BEARD', 'COMBO', 'STYLING', 'OTHER'];
 
 function toInt(value, fallback = null) {
@@ -97,6 +106,7 @@ const adminController = {
 
     const services = await ServiceModel.listAll();
     const serviceMap = new Map(services.map((service) => [service.id, service]));
+    const quick = await ReportService.quickTotals();
 
     res.json({
       ok: true,
@@ -107,6 +117,7 @@ const adminController = {
         activeBarbers,
         todayRevenue: todayRevenueRows._sum.totalPrice || 0,
         monthRevenue: monthRevenueRows._sum.totalPrice || 0,
+        payments: quick,
         topServices: topServices.map((row) => ({
           serviceId: row.serviceId,
           name: serviceMap.get(row.serviceId)?.name || '—',
@@ -119,10 +130,13 @@ const adminController = {
 
   // ─── Bronlar ──────────────────────────────────────────────────────
   listAppointments: asyncHandler(async (req, res) => {
-    const { status, barberId, date, from, to, search } = req.query;
+    const { status, barberId, date, from, to, search, paymentMethod, isPaid } = req.query;
 
     if (status && !STATUSES.includes(status)) {
       throw ApiError.badRequest('Holat noto\'g\'ri', 'INVALID_STATUS');
+    }
+    if (paymentMethod && !PAYMENT_METHODS.includes(paymentMethod)) {
+      throw ApiError.badRequest('To\'lov turi noto\'g\'ri', 'INVALID_PAYMENT_METHOD');
     }
 
     const result = await AppointmentModel.listForAdmin({
@@ -132,6 +146,8 @@ const adminController = {
       from,
       to,
       search,
+      paymentMethod,
+      isPaid: toBool(isPaid, undefined),
       page: toInt(req.query.page, 1),
       pageSize: Math.min(toInt(req.query.pageSize, 30), 100),
     });
@@ -154,6 +170,25 @@ const adminController = {
     if (existing.status !== status) {
       NotificationService.notifyClientStatusChanged(appointment).catch(() => {});
     }
+
+    res.json({ ok: true, data: serializeAppointment(appointment) });
+  }),
+
+  /** To'landi / to'lanmadi deb belgilash. */
+  setAppointmentPayment: asyncHandler(async (req, res) => {
+    const { isPaid, paymentMethod } = req.body || {};
+
+    if (paymentMethod && !PAYMENT_METHODS.includes(paymentMethod)) {
+      throw ApiError.badRequest('To\'lov turi noto\'g\'ri', 'INVALID_PAYMENT_METHOD');
+    }
+
+    const existing = await AppointmentModel.findById(req.params.id);
+    if (!existing) throw ApiError.notFound('Bron topilmadi');
+
+    const appointment =
+      isPaid === undefined
+        ? await AppointmentModel.setPaymentMethod(req.params.id, paymentMethod)
+        : await AppointmentModel.setPaid(req.params.id, Boolean(isPaid), paymentMethod);
 
     res.json({ ok: true, data: serializeAppointment(appointment) });
   }),
@@ -373,6 +408,9 @@ const adminController = {
       'logoUrl',
       'about',
       'aboutRu',
+      'cardNumber',
+      'cardHolder',
+      'cardBank',
     ];
 
     for (const field of textFields) {
@@ -390,6 +428,13 @@ const adminController = {
     }
     if (body.locationLng !== undefined) {
       data.locationLng = body.locationLng === null || body.locationLng === '' ? null : Number(body.locationLng);
+    }
+
+    if (body.cardPaymentEnabled !== undefined) {
+      data.cardPaymentEnabled = toBool(body.cardPaymentEnabled, true);
+    }
+    if (body.cashPaymentEnabled !== undefined) {
+      data.cashPaymentEnabled = toBool(body.cashPaymentEnabled, true);
     }
 
     if (body.slotStep !== undefined) {
@@ -436,6 +481,21 @@ const adminController = {
         appointments: appointments.map(serializeAppointment),
       },
     });
+  }),
+
+  // ─── Tushum hisoboti ──────────────────────────────────────────────
+  getReport: asyncHandler(async (req, res) => {
+    const today = todayStr();
+    const from = req.query.from || `${today.slice(0, 7)}-01`;
+    const to = req.query.to || today;
+
+    if (!isValidDateStr(from) || !isValidDateStr(to)) {
+      throw ApiError.badRequest('Sana formati noto\'g\'ri', 'INVALID_DATE');
+    }
+    if (from > to) throw ApiError.badRequest('Boshlanish sanasi kattaroq', 'INVALID_RANGE');
+
+    const report = await ReportService.build({ from, to });
+    res.json({ ok: true, data: report });
   }),
 
   // ─── Statistika (oxirgi 14 kun) ───────────────────────────────────

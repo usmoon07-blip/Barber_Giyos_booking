@@ -37,6 +37,13 @@ const bookingController = {
           locationLat: settings.locationLat,
           locationLng: settings.locationLng,
         },
+        payment: {
+          cashEnabled: settings.cashPaymentEnabled,
+          cardEnabled: settings.cardPaymentEnabled,
+          cardNumber: settings.cardPaymentEnabled ? settings.cardNumber : null,
+          cardHolder: settings.cardPaymentEnabled ? settings.cardHolder : null,
+          cardBank: settings.cardPaymentEnabled ? settings.cardBank : null,
+        },
       },
     });
   }),
@@ -127,7 +134,7 @@ const bookingController = {
 
   /** Yangi bron yaratish. */
   createAppointment: asyncHandler(async (req, res) => {
-    const { barberId, serviceId, date, startTime, note, name, phone } = req.body || {};
+    const { barberId, serviceId, date, startTime, note, name, phone, paymentMethod } = req.body || {};
 
     if (!barberId || !serviceId || !date || !startTime) {
       throw ApiError.badRequest('barberId, serviceId, date va startTime kerak');
@@ -159,10 +166,12 @@ const bookingController = {
       date,
       startTime,
       note,
+      paymentMethod,
     });
 
     // Xabarlarni javobni kutmasdan yuboramiz
-    NotificationService.notifyClientBookingCreated(appointment).catch(() => {});
+    const settings = await SiteSettingModel.get();
+    NotificationService.notifyClientBookingCreated(appointment, settings).catch(() => {});
     NotificationService.notifyAdminsNewBooking(appointment).catch(() => {});
 
     res.status(201).json({ ok: true, data: serializeAppointment(appointment) });

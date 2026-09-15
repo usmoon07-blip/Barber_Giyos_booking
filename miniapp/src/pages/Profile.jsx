@@ -205,6 +205,16 @@ export default function Profile() {
                   🕐 {appointment.startTime} — {appointment.endTime}
                 </div>
 
+                <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+                  <span className="pay-tag">
+                    {appointment.paymentMethod === 'CARD' ? '💳' : '💵'}{' '}
+                    {appointment.paymentMethod === 'CARD' ? text.booking.card : text.booking.cash}
+                  </span>
+                  {appointment.isPaid ? (
+                    <span className="pay-tag pay-tag--paid">✅ {text.profile.paid}</span>
+                  ) : null}
+                </div>
+
                 {isUpcoming ? (
                   <div className="booking-card__actions">
                     <button

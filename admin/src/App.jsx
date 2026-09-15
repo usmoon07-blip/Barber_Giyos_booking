@@ -6,6 +6,7 @@ import Appointments from './pages/Appointments';
 import Barbers from './pages/Barbers';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import Reports from './pages/Reports';
 import Services from './pages/Services';
 import Settings from './pages/Settings';
 import Users from './pages/Users';
@@ -22,6 +23,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/appointments" element={<Appointments />} />
+        <Route path="/reports" element={<Reports />} />
         <Route path="/barbers" element={<Barbers />} />
         <Route path="/services" element={<Services />} />
         <Route path="/working-hours" element={<WorkingHours />} />

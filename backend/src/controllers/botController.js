@@ -173,6 +173,8 @@ const botController = {
           ? appointment.service.nameRu
           : appointment.service.name;
 
+      const payment = text.payments[appointment.paymentMethod] || text.payments.CASH;
+
       const body = [
         `${text.statuses[appointment.status]}`,
         '',
@@ -181,6 +183,8 @@ const botController = {
         `📅 <b>${text.bookingLine.date}:</b> ${formatDate(dateStr, user.language)}`,
         `🕐 <b>${text.bookingLine.time}:</b> ${appointment.startTime} — ${appointment.endTime}`,
         `💰 <b>${text.bookingLine.price}:</b> ${formatPrice(appointment.totalPrice, user.language)}`,
+        `${payment.slice(0, 2)} <b>${text.bookingLine.payment}:</b> ${payment.slice(2).trim()}` +
+          (appointment.isPaid ? ` — ${text.paid}` : ''),
       ].join('\n');
 
       const isActive = AppointmentModel.ACTIVE_STATUSES.includes(appointment.status);
@@ -263,6 +267,11 @@ const botController = {
     if (settings.instagram) {
       const handle = settings.instagram.replace(/^@/, '');
       lines.push(`📷 <a href="https://instagram.com/${handle}">@${handle}</a>`);
+    }
+
+    if (settings.cardPaymentEnabled && settings.cardNumber) {
+      const card = NotificationService.formatCardDetails(settings, user.language);
+      if (card) lines.push('', card);
     }
 
     await ctx.replyWithHTML(lines.join('\n'), mainKeyboard(user.language));

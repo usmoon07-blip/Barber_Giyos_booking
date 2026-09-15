@@ -82,6 +82,27 @@ const AppointmentModel = {
     });
   },
 
+  /** To'langan / to'lanmagan deb belgilash. */
+  setPaid(id, isPaid, paymentMethod) {
+    return prisma.appointment.update({
+      where: { id: Number(id) },
+      data: {
+        isPaid,
+        paidAt: isPaid ? new Date() : null,
+        ...(paymentMethod ? { paymentMethod } : {}),
+      },
+      include: FULL_INCLUDE,
+    });
+  },
+
+  setPaymentMethod(id, paymentMethod) {
+    return prisma.appointment.update({
+      where: { id: Number(id) },
+      data: { paymentMethod },
+      include: FULL_INCLUDE,
+    });
+  },
+
   markReminderSent(id) {
     return prisma.appointment.update({
       where: { id: Number(id) },
@@ -94,11 +115,24 @@ const AppointmentModel = {
   },
 
   /** Admin panel uchun filtrlangan ro'yxat. */
-  async listForAdmin({ status, barberId, date, from, to, search, page = 1, pageSize = 30 } = {}) {
+  async listForAdmin({
+    status,
+    barberId,
+    date,
+    from,
+    to,
+    search,
+    paymentMethod,
+    isPaid,
+    page = 1,
+    pageSize = 30,
+  } = {}) {
     const where = {};
 
     if (status) where.status = status;
     if (barberId) where.barberId = Number(barberId);
+    if (paymentMethod) where.paymentMethod = paymentMethod;
+    if (isPaid !== undefined && isPaid !== null) where.isPaid = isPaid;
 
     if (date) {
       where.date = toDbDate(date);

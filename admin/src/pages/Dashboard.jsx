@@ -32,11 +32,23 @@ export default function Dashboard() {
 
   const maxCount = Math.max(1, ...stats.map((item) => item.count));
 
+  const today = data.payments?.today;
+  const month = data.payments?.month;
+
   const cards = [
     { label: '📅 Bugungi bronlar', value: data.todayAppointments },
     { label: '🕐 Kutilayotgan', value: data.pendingCount, hint: 'tasdiqlashni kutmoqda' },
-    { label: '💰 Bugungi tushum', value: `${formatMoney(data.todayRevenue)} so'm` },
-    { label: '📈 Oylik tushum', value: `${formatMoney(data.monthRevenue)} so'm` },
+    {
+      label: "💰 Bugungi tushum",
+      value: `${formatMoney(today?.completedRevenue ?? data.todayRevenue)} so'm`,
+      hint: today ? `💵 ${formatMoney(today.cash)} · 💳 ${formatMoney(today.card)}` : null,
+      accent: true,
+    },
+    {
+      label: '📈 Oylik tushum',
+      value: `${formatMoney(month?.completedRevenue ?? data.monthRevenue)} so'm`,
+      hint: month ? `💵 ${formatMoney(month.cash)} · 💳 ${formatMoney(month.card)}` : null,
+    },
     { label: '👥 Jami mijozlar', value: data.totalUsers },
     { label: '💈 Faol barberlar', value: data.activeBarbers },
   ];
@@ -48,20 +60,32 @@ export default function Dashboard() {
           <h1 className="page-title">Dashboard</h1>
           <p className="page-subtitle">Sartaroshxona bugungi holati</p>
         </div>
-        <button type="button" className="btn btn--secondary" onClick={load}>
-          ↻ Yangilash
-        </button>
+        <div className="btn-row">
+          <Link to="/reports" className="btn btn--primary">
+            💰 To'liq hisobot
+          </Link>
+          <button type="button" className="btn btn--secondary" onClick={load}>
+            ↻ Yangilash
+          </button>
+        </div>
       </div>
 
       <div className="stat-grid">
         {cards.map((card) => (
-          <div key={card.label} className="stat">
+          <div key={card.label} className={`stat${card.accent ? ' stat--accent' : ''}`}>
             <p className="stat__label">{card.label}</p>
             <p className="stat__value">{card.value}</p>
             {card.hint ? <p className="stat__hint">{card.hint}</p> : null}
           </div>
         ))}
       </div>
+
+      {month?.unpaidCompleted > 0 ? (
+        <div className="notice">
+          ⚠️ Shu oyda bajarilgan ishlardan <b>{formatMoney(month.unpaidCompleted)} so'm</b> hali
+          «to'langan» deb belgilanmagan.
+        </div>
+      ) : null}
 
       <h2 className="section-title">Oxirgi 14 kun</h2>
       <div className="panel">

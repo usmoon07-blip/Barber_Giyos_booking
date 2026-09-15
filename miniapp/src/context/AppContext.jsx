@@ -27,6 +27,7 @@ function writeStored(key, value) {
 export function AppProvider({ children }) {
   const [user, setUser] = useState(null);
   const [shop, setShop] = useState(null);
+  const [payment, setPayment] = useState(null);
   const [language, setLanguageState] = useState(() => readStored(LANGUAGE_KEY) || 'uz');
   const [onboarded, setOnboarded] = useState(() => readStored(ONBOARDING_KEY) === '1');
   const [loading, setLoading] = useState(true);
@@ -41,6 +42,7 @@ export function AppProvider({ children }) {
       const data = await api.getMe();
       setUser(data.user);
       setShop(data.shop);
+      setPayment(data.payment || null);
 
       // Tilni serverdagi qiymat bilan moslashtiramiz
       const stored = readStored(LANGUAGE_KEY);
@@ -93,6 +95,7 @@ export function AppProvider({ children }) {
       user,
       setUser,
       shop,
+      payment,
       language,
       setLanguage,
       text: getTranslation(language),
@@ -105,7 +108,20 @@ export function AppProvider({ children }) {
       showToast,
       telegramUser: getTelegramUser(),
     }),
-    [user, shop, language, setLanguage, onboarded, completeOnboarding, loading, error, load, toast, showToast]
+    [
+      user,
+      shop,
+      payment,
+      language,
+      setLanguage,
+      onboarded,
+      completeOnboarding,
+      loading,
+      error,
+      load,
+      toast,
+      showToast,
+    ]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
