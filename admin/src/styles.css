@@ -1,0 +1,930 @@
+/* ────────────────────────────────────────────────────────────────
+   G'iyos Barbershop — Admin Panel
+   Desktop va mobil ekranlarda ishlaydi
+   ──────────────────────────────────────────────────────────────── */
+
+:root {
+  --bg: #f7f7f8;
+  --panel: #ffffff;
+  --ink: #0b0b0c;
+  --ink-2: #3f3f46;
+  --muted: #8a8a94;
+  --line: #e8e8eb;
+  --line-2: #d8d8dd;
+  --accent: #b58a3c;
+  --accent-soft: #f7f1e6;
+  --danger: #c0392b;
+  --danger-soft: #fdecea;
+  --success: #1f8a4c;
+  --success-soft: #e8f6ee;
+  --warn: #9a6b00;
+  --warn-soft: #fff6e5;
+
+  --radius: 14px;
+  --radius-sm: 10px;
+  --sidebar-w: 240px;
+  --shadow: 0 2px 12px rgba(11, 11, 12, 0.06);
+  --shadow-lg: 0 12px 40px rgba(11, 11, 12, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 15px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* ─── Kirish sahifasi ──────────────────────────────────────────── */
+
+.login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+}
+
+.login__card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 32px 28px;
+  box-shadow: var(--shadow);
+}
+
+.login__logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--ink);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  margin: 0 auto 18px;
+}
+
+.login__title {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin: 0 0 4px;
+}
+
+.login__subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+  margin: 0 0 26px;
+}
+
+/* ─── Tuzilma ──────────────────────────────────────────────────── */
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: var(--sidebar-w);
+  flex: 0 0 var(--sidebar-w);
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  padding: 22px 14px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px 22px;
+}
+
+.sidebar__logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex: 0 0 auto;
+}
+
+.sidebar__name {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--ink-2);
+  font-size: 14.5px;
+  font-weight: 520;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.sidebar__link:hover {
+  background: var(--bg);
+}
+
+.sidebar__link--active {
+  background: var(--ink);
+  color: #fff;
+}
+
+.sidebar__icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.sidebar__footer {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: 26px 28px 60px;
+}
+
+.topbar {
+  display: none;
+}
+
+/* ─── Sarlavhalar ──────────────────────────────────────────────── */
+
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.page-title {
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  margin: 28px 0 12px;
+}
+
+/* ─── Kartalar ─────────────────────────────────────────────────── */
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+}
+
+.stat {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.stat__label {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.stat__value {
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.stat__hint {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 6px 0 0;
+}
+
+/* ─── Jadval ───────────────────────────────────────────────────── */
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  background: #fcfcfd;
+  white-space: nowrap;
+}
+
+td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14.5px;
+  vertical-align: middle;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: #fcfcfd;
+}
+
+.cell-strong {
+  font-weight: 600;
+}
+
+.cell-muted {
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+/* ─── Tugmalar ─────────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14.5px;
+  font-weight: 580;
+  transition: opacity 0.12s ease, background 0.12s ease;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  opacity: 0.88;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.btn--primary {
+  background: var(--ink);
+  color: #fff;
+}
+
+.btn--secondary {
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line-2);
+}
+
+.btn--danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--sm {
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 13.5px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ─── Formalar ─────────────────────────────────────────────────── */
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 560;
+  color: var(--ink-2);
+  margin-bottom: 6px;
+}
+
+.field__input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.12s ease;
+}
+
+.field__input:focus {
+  border-color: var(--ink);
+}
+
+textarea.field__input {
+  min-height: 84px;
+  padding: 11px 13px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+select.field__input {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8a94' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  background-size: 17px;
+  padding-right: 34px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  font-size: 14.5px;
+  user-select: none;
+}
+
+.checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+
+.form-error {
+  background: var(--danger-soft);
+  color: var(--danger);
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+/* ─── Filtrlar ─────────────────────────────────────────────────── */
+
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.filters .field__input {
+  min-width: 150px;
+  width: auto;
+}
+
+/* ─── Holat belgilari ──────────────────────────────────────────── */
+
+.status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status--PENDING {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+.status--CONFIRMED {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.status--COMPLETED {
+  background: #eef0f3;
+  color: var(--ink-2);
+}
+
+.status--CANCELLED {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 560;
+  background: var(--bg);
+  color: var(--ink-2);
+}
+
+.pill--on {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.pill--off {
+  background: #eef0f3;
+  color: var(--muted);
+}
+
+.pill--otw {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ─── Modal ────────────────────────────────────────────────────── */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 11, 12, 0.45);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal {
+  width: 100%;
+  max-width: 520px;
+  background: var(--panel);
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+}
+
+.modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 22px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.modal__title {
+  font-size: 18px;
+  font-weight: 680;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.modal__close {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 19px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal__close:hover {
+  background: var(--bg);
+}
+
+.modal__body {
+  padding: 20px 22px;
+  overflow-y: auto;
+}
+
+.modal__footer {
+  padding: 14px 22px 20px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* ─── Ro'yxatlar ───────────────────────────────────────────────── */
+
+.barber-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.barber-row:last-child {
+  border-bottom: none;
+}
+
+.avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg);
+  flex: 0 0 auto;
+}
+
+.avatar--fallback {
+  background: var(--ink);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 640;
+  font-size: 18px;
+}
+
+.avatar--sm {
+  width: 34px;
+  height: 34px;
+  font-size: 14px;
+}
+
+.thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 9px;
+  object-fit: cover;
+  background: var(--bg);
+  flex: 0 0 auto;
+}
+
+.thumb--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--muted);
+}
+
+/* ─── Ish jadvali ──────────────────────────────────────────────── */
+
+.hours-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hours-row {
+  display: grid;
+  grid-template-columns: 116px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+}
+
+.hours-row--off {
+  background: #fbfbfc;
+}
+
+.hours-row__day {
+  font-size: 14.5px;
+  font-weight: 580;
+}
+
+.hours-row__times {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hours-row__times .field__input {
+  min-height: 38px;
+  width: 148px;
+  padding: 0 10px;
+}
+
+/* ─── Diagramma ────────────────────────────────────────────────── */
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 140px;
+  padding: 16px;
+}
+
+.chart__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.chart__bar {
+  width: 100%;
+  max-width: 34px;
+  background: var(--ink);
+  border-radius: 5px 5px 0 0;
+  min-height: 3px;
+  transition: height 0.2s ease;
+}
+
+.chart__bar--empty {
+  background: var(--line);
+  min-height: 6px;
+}
+
+.chart__label {
+  font-size: 10.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ─── Holatlar ─────────────────────────────────────────────────── */
+
+.empty {
+  padding: 56px 24px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.empty__icon {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.empty__title {
+  font-size: 16px;
+  font-weight: 620;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+
+.loading {
+  padding: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  width: 26px;
+  height: 26px;
+  border: 2.5px solid var(--line-2);
+  border-top-color: var(--ink);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  padding: 13px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 520;
+  box-shadow: var(--shadow-lg);
+  z-index: 80;
+  animation: toast-in 0.22s ease;
+  max-width: 360px;
+}
+
+.toast--error {
+  background: var(--danger);
+}
+
+.toast--success {
+  background: var(--success);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ─── Mobil ekran ──────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+
+  .topbar__brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 15px;
+    font-weight: 650;
+  }
+
+  .burger {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background: var(--bg);
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    z-index: 70;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .sidebar--open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 11, 12, 0.4);
+    z-index: 69;
+  }
+
+  .content {
+    padding: 18px 14px 50px;
+  }
+
+  .page-title {
+    font-size: 21px;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .hours-row {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .toast {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    max-width: none;
+  }
+}
