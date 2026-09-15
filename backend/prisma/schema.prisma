@@ -1,0 +1,154 @@
+// ────────────────────────────────────────────────────────────────────
+//  G'iyos Barbershop — ma'lumotlar bazasi sxemasi
+// ────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum AppointmentStatus {
+  PENDING // Kutilmoqda
+  CONFIRMED // Tasdiqlangan
+  COMPLETED // Yakunlangan
+  CANCELLED // Bekor qilingan
+}
+
+enum ServiceCategory {
+  HAIR // Soch
+  BEARD // Soqol
+  COMBO // Kompleks
+  STYLING // Styling
+  OTHER // Boshqa
+}
+
+// ─── Mijoz ──────────────────────────────────────────────────────────
+model User {
+  id         Int      @id @default(autoincrement())
+  telegramId String   @unique
+  firstName  String
+  lastName   String?
+  username   String?
+  phone      String?
+  language   String   @default("uz") // uz | ru
+  photoUrl   String?
+  nameCustom Boolean  @default(false) // mijoz ismini o'zi kiritganmi
+  isBlocked  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  appointments Appointment[]
+
+  @@index([createdAt])
+}
+
+// ─── Barber (sartarosh) ─────────────────────────────────────────────
+model Barber {
+  id        Int      @id @default(autoincrement())
+  name      String
+  photoUrl  String?
+  bio       String?
+  bioRu     String?
+  phone     String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workingHours WorkingHour[]
+  appointments Appointment[]
+
+  @@index([isActive, sortOrder])
+}
+
+// ─── Xizmat ─────────────────────────────────────────────────────────
+model Service {
+  id            Int             @id @default(autoincrement())
+  name          String
+  nameRu        String?
+  imageUrl      String?
+  description   String?
+  descriptionRu String?
+  oldPrice      Int? // eski narx (chegirma bo'lsa)
+  price         Int // amaldagi narx (so'mda)
+  category      ServiceCategory @default(HAIR)
+  duration      Int             @default(30) // daqiqada
+  isPopular     Boolean         @default(false)
+  isActive      Boolean         @default(true)
+  sortOrder     Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  appointments Appointment[]
+
+  @@index([isActive, sortOrder])
+}
+
+// ─── Bron ───────────────────────────────────────────────────────────
+model Appointment {
+  id             Int               @id @default(autoincrement())
+  userId         Int
+  barberId       Int
+  serviceId      Int
+  date           DateTime          @db.Date
+  startTime      String // "HH:mm"
+  endTime        String // "HH:mm"
+  totalPrice     Int
+  status         AppointmentStatus @default(PENDING)
+  note           String?
+  onTheWayAt     DateTime? // mijoz "Yo'lga tushdim" bosgan vaqt
+  reminderSentAt DateTime? // eslatma yuborilgan vaqt
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  barber  Barber  @relation(fields: [barberId], references: [id], onDelete: Restrict)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  // Bir barberning bir vaqtiga ikkinchi bron tushishining oldini oladi
+  @@unique([barberId, date, startTime])
+  @@index([date, status])
+  @@index([userId, date])
+}
+
+// ─── Ish jadvali ────────────────────────────────────────────────────
+model WorkingHour {
+  id        Int     @id @default(autoincrement())
+  barberId  Int
+  weekday   Int // 0 = Yakshanba ... 6 = Shanba
+  startTime String  @default("09:00")
+  endTime   String  @default("20:00")
+  isWorking Boolean @default(true)
+
+  barber Barber @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
+  @@unique([barberId, weekday])
+}
+
+// ─── Sartaroshxona sozlamalari (bitta qator) ────────────────────────
+model SiteSetting {
+  id                 Int      @id @default(1)
+  shopName           String   @default("Barbershop")
+  phone              String?
+  address            String?
+  addressRu          String?
+  instagram          String?
+  telegramChannel    String?
+  workingHoursText   String?
+  workingHoursTextRu String?
+  logoUrl            String?
+  about              String?
+  aboutRu            String?
+  locationLat        Float?
+  locationLng        Float?
+  slotStep           Int      @default(30) // vaqt oralig'i (daqiqa)
+  minLeadMinutes     Int      @default(30) // eng kamida necha daqiqa oldin bron
+  maxAdvanceDays     Int      @default(21) // necha kun oldinga bron qilish mumkin
+  reminderHours      Int      @default(2) // necha soat oldin eslatma
+  updatedAt          DateTime @updatedAt
+}
