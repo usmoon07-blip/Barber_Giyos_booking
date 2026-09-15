@@ -59,6 +59,7 @@ export const translations = {
       anyBarber: 'Farqi yo’q',
       noSlots: 'Bu kunda bo’sh vaqt qolmagan',
       dayOff: 'Bu kuni barber dam oladi',
+      blocked: 'Bu kun yopiq',
       loadingSlots: 'Bo’sh vaqtlar yuklanmoqda...',
       today: 'Bugun',
       tomorrow: 'Ertaga',
@@ -125,6 +126,7 @@ export const translations = {
         CONFIRMED: 'Tasdiqlangan',
         COMPLETED: 'Yakunlangan',
         CANCELLED: 'Bekor qilingan',
+        NO_SHOW: 'Kelmadi',
       },
     },
 
@@ -200,6 +202,7 @@ export const translations = {
       anyBarber: 'Не важно',
       noSlots: 'На этот день свободного времени не осталось',
       dayOff: 'В этот день барбер отдыхает',
+      blocked: 'В этот день закрыто',
       loadingSlots: 'Загружаем свободное время...',
       today: 'Сегодня',
       tomorrow: 'Завтра',
@@ -243,6 +246,8 @@ export const translations = {
         DAY_OFF: 'В этот день барбер не работает',
         CARD_DISABLED: 'Оплата картой пока недоступна',
         CASH_DISABLED: 'Оплата наличными пока недоступна',
+        BLOCKED: 'Это время занято. Выберите другое.',
+        CANCEL_TOO_LATE: 'До визита осталось мало времени. Позвоните в барбершоп, чтобы отменить.',
       },
     },
 
@@ -271,6 +276,7 @@ export const translations = {
         CONFIRMED: 'Подтверждена',
         COMPLETED: 'Завершена',
         CANCELLED: 'Отменена',
+        NO_SHOW: 'Не пришёл',
       },
     },
 

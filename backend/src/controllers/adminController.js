@@ -8,22 +8,27 @@ const BarberModel = require('../models/Barber');
 const ServiceModel = require('../models/Service');
 const SiteSettingModel = require('../models/SiteSetting');
 const UserModel = require('../models/User');
+const TimeBlockModel = require('../models/TimeBlock');
 const WorkingHourModel = require('../models/WorkingHour');
 const NotificationService = require('../services/notification.service');
 const ReportService = require('../services/report.service');
+const BookingService = require('../services/booking.service');
+const { AvailabilityService } = require('../services/availability.service');
 const { ApiError, asyncHandler } = require('../utils/errors');
 const { safeCompare } = require('../utils/telegramAuth');
 const { serializeAppointment } = require('../utils/serialize');
 const {
   todayStr,
   toDbDate,
+  fromDbDate,
   addDays,
+  weekdayOf,
   isValidTimeStr,
   isValidDateStr,
   toMinutes,
 } = require('../utils/time');
 
-const STATUSES = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'];
+const STATUSES = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'];
 const PAYMENT_METHODS = ['CASH', 'CARD'];
 const CATEGORIES = ['HAIR', 'BEARD', 'COMBO', 'STYLING', 'OTHER'];
 
@@ -156,6 +161,94 @@ const adminController = {
       ok: true,
       data: { ...result, items: result.items.map(serializeAppointment) },
     });
+  }),
+
+  /**
+   * Sartarosh qo'lda bron qo'shadi (telefon orqali yoki eshikdan kelgan mijoz).
+   * Mijozning Telegram akkaunti bo'lishi shart emas.
+   */
+  createAppointment: asyncHandler(async (req, res) => {
+    const {
+      userId,
+      name,
+      phone,
+      barberId,
+      serviceId,
+      date,
+      startTime,
+      note,
+      paymentMethod,
+      isPaid,
+      status,
+    } = req.body || {};
+
+    if (!barberId || !serviceId || !date || !startTime) {
+      throw ApiError.badRequest('barberId, serviceId, date va startTime kerak');
+    }
+    if (status && !STATUSES.includes(status)) {
+      throw ApiError.badRequest('Holat noto\'g\'ri', 'INVALID_STATUS');
+    }
+
+    let client = null;
+
+    if (userId) {
+      client = await UserModel.findById(userId);
+      if (!client) throw ApiError.notFound('Mijoz topilmadi');
+    } else {
+      if (!name || String(name).trim().length < 2) {
+        throw ApiError.badRequest('Mijoz ismini kiriting', 'INVALID_NAME');
+      }
+
+      // Telefon bo'yicha avval yozilgan mijozni topamiz — takrorlanmasin
+      if (phone) client = await UserModel.findByPhone(phone);
+
+      if (!client) {
+        client = await UserModel.createWalkIn({ firstName: name, phone });
+      } else if (phone && !client.phone) {
+        client = await UserModel.updateProfile(client.id, { phone: String(phone).trim().slice(0, 20) });
+      }
+    }
+
+    const appointment = await BookingService.createAppointment({
+      userId: client.id,
+      barberId,
+      serviceId,
+      date,
+      startTime,
+      note,
+      paymentMethod,
+      isPaid,
+      status,
+      byAdmin: true,
+    });
+
+    // Mijozning Telegrami bo'lsa, unga ham xabar boradi
+    if (appointment.user.telegramId) {
+      const settings = await SiteSettingModel.get();
+      NotificationService.notifyClientBookingCreated(appointment, settings).catch(() => {});
+    }
+
+    res.status(201).json({ ok: true, data: serializeAppointment(appointment) });
+  }),
+
+  /** Qo'lda bron qo'shishda bo'sh vaqtlarni ko'rsatish uchun. */
+  getAvailability: asyncHandler(async (req, res) => {
+    const { barberId, serviceId, date } = req.query;
+    if (!barberId || !serviceId || !date) {
+      throw ApiError.badRequest('barberId, serviceId va date kerak');
+    }
+
+    const result = await AvailabilityService.getTimeSlots({ barberId, serviceId, date });
+    res.json({ ok: true, data: result });
+  }),
+
+  /** Mijozlarni tezkor qidirish (qo'lda bron qo'shishda). */
+  searchUsers: asyncHandler(async (req, res) => {
+    const search = String(req.query.q || '').trim();
+    if (search.length < 2) return res.json({ ok: true, data: [] });
+
+    const result = await UserModel.list({ search, page: 1, pageSize: 8 });
+    return res.json({ ok: true, data: result.items });
   }),
 
   updateAppointmentStatus: asyncHandler(async (req, res) => {
@@ -292,6 +385,82 @@ const adminController = {
     const updated = await WorkingHourModel.listByBarber(req.params.id);
 
     res.json({ ok: true, data: updated });
+  }),
+
+  // ─── Vaqt bloklash ────────────────────────────────────────────────
+  listTimeBlocks: asyncHandler(async (req, res) => {
+    const today = todayStr();
+    const from = req.query.from || today;
+    const to = req.query.to || addDays(today, 60);
+
+    const blocks = await TimeBlockModel.list({ from, to });
+    res.json({ ok: true, data: blocks.map((block) => ({ ...block, date: fromDbDate(block.date) })) });
+  }),
+
+  createTimeBlock: asyncHandler(async (req, res) => {
+    const { barberId, date, startTime, endTime, isFullDay, reason } = req.body || {};
+
+    if (!isValidDateStr(date)) throw ApiError.badRequest('Sana formati noto\'g\'ri', 'INVALID_DATE');
+
+    const fullDay = toBool(isFullDay, false);
+
+    if (!fullDay) {
+      if (!isValidTimeStr(startTime) || !isValidTimeStr(endTime)) {
+        throw ApiError.badRequest('Vaqt formati noto\'g\'ri (HH:mm)', 'INVALID_TIME');
+      }
+      if (toMinutes(endTime) <= toMinutes(startTime)) {
+        throw ApiError.badRequest('Tugash vaqti boshlanishdan keyin bo\'lishi kerak', 'INVALID_RANGE');
+      }
+    }
+
+    if (barberId) {
+      const barber = await BarberModel.findById(barberId);
+      if (!barber) throw ApiError.notFound('Barber topilmadi');
+    }
+
+    // Shu vaqtga tushib qolgan faol bronlar borligini aytamiz
+    const affected = await prisma.appointment.findMany({
+      where: {
+        date: toDbDate(date),
+        status: { in: ['PENDING', 'CONFIRMED'] },
+        ...(barberId ? { barberId: toInt(barberId) } : {}),
+      },
+      include: { user: true, barber: true, service: true },
+    });
+
+    const conflicting = fullDay
+      ? affected
+      : affected.filter(
+          (item) =>
+            toMinutes(item.startTime) < toMinutes(endTime) && toMinutes(item.endTime) > toMinutes(startTime)
+        );
+
+    const block = await TimeBlockModel.create({
+      barberId: barberId ? toInt(barberId) : null,
+      date: toDbDate(date),
+      startTime: fullDay ? '00:00' : startTime,
+      endTime: fullDay ? '23:59' : endTime,
+      isFullDay: fullDay,
+      reason: reason ? String(reason).trim().slice(0, 200) : null,
+    });
+
+    res.status(201).json({
+      ok: true,
+      data: {
+        ...block,
+        date: fromDbDate(block.date),
+        // Shu blok ostida qolib ketgan bronlar — admin panel ogohlantiradi
+        conflicting: conflicting.map(serializeAppointment),
+      },
+    });
+  }),
+
+  deleteTimeBlock: asyncHandler(async (req, res) => {
+    const block = await TimeBlockModel.findById(req.params.id);
+    if (!block) throw ApiError.notFound('Blok topilmadi');
+
+    await TimeBlockModel.remove(req.params.id);
+    res.json({ ok: true });
   }),
 
   // ─── Xizmatlar ────────────────────────────────────────────────────
@@ -457,6 +626,16 @@ const adminController = {
       data.maxAdvanceDays = days;
     }
 
+    if (body.cancelDeadlineHours !== undefined) {
+      const hours = toInt(body.cancelDeadlineHours, 2);
+      if (hours < 0 || hours > 48) throw ApiError.badRequest('0 dan 48 gacha bo\'lishi kerak', 'INVALID_DEADLINE');
+      data.cancelDeadlineHours = hours;
+    }
+
+    if (body.autoComplete !== undefined) {
+      data.autoComplete = toBool(body.autoComplete, true);
+    }
+
     if (body.reminderHours !== undefined) {
       const hours = toInt(body.reminderHours, 2);
       if (hours < 0 || hours > 48) throw ApiError.badRequest('0 dan 48 gacha bo\'lishi kerak', 'INVALID_REMINDER');
@@ -470,14 +649,37 @@ const adminController = {
   // ─── Kunlik jadval (barberlar bo'yicha) ───────────────────────────
   getDaySchedule: asyncHandler(async (req, res) => {
     const date = req.query.date || todayStr();
-    const appointments = await AppointmentModel.listByDate(date);
-    const barbers = await BarberModel.listActive();
+    if (!isValidDateStr(date)) throw ApiError.badRequest('Sana formati noto\'g\'ri', 'INVALID_DATE');
+
+    const [appointments, barbers, blocks, settings] = await Promise.all([
+      AppointmentModel.listByDate(date),
+      BarberModel.listAll(),
+      TimeBlockModel.findForDate(date),
+      SiteSettingModel.get(),
+    ]);
+
+    const weekday = weekdayOf(date);
 
     res.json({
       ok: true,
       data: {
         date,
-        barbers,
+        weekday,
+        slotStep: settings.slotStep,
+        barbers: barbers
+          .filter((barber) => barber.isActive)
+          .map((barber) => {
+            const hour = barber.workingHours.find((item) => item.weekday === weekday);
+            return {
+              id: barber.id,
+              name: barber.name,
+              photoUrl: barber.photoUrl,
+              isWorking: Boolean(hour && hour.isWorking),
+              startTime: hour ? hour.startTime : null,
+              endTime: hour ? hour.endTime : null,
+            };
+          }),
+        blocks: blocks.map((block) => ({ ...block, date: fromDbDate(block.date) })),
         appointments: appointments.map(serializeAppointment),
       },
     });

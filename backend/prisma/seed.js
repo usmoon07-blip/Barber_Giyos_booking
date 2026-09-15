@@ -30,6 +30,8 @@ const SHOP = {
   minLeadMinutes: 30,
   maxAdvanceDays: 21,
   reminderHours: 2,
+  cancelDeadlineHours: 2,
+  autoComplete: true,
 };
 
 const BARBERS = [

@@ -81,7 +81,8 @@ export default function Profile() {
       setAppointments((current) => current.map((item) => (item.id === updated.id ? updated : item)));
     } catch (requestError) {
       haptic('error');
-      showToast(requestError.message, 'error');
+      const known = text.booking.errors[requestError.code];
+      showToast(known || requestError.message, 'error');
     } finally {
       setBusyId(null);
     }

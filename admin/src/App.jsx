@@ -7,6 +7,8 @@ import Barbers from './pages/Barbers';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Reports from './pages/Reports';
+import Schedule from './pages/Schedule';
+import TimeBlocks from './pages/TimeBlocks';
 import Services from './pages/Services';
 import Settings from './pages/Settings';
 import Users from './pages/Users';
@@ -24,6 +26,8 @@ export default function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/appointments" element={<Appointments />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/schedule" element={<Schedule />} />
+        <Route path="/time-blocks" element={<TimeBlocks />} />
         <Route path="/barbers" element={<Barbers />} />
         <Route path="/services" element={<Services />} />
         <Route path="/working-hours" element={<WorkingHours />} />

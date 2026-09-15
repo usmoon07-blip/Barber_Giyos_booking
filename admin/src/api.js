@@ -78,6 +78,10 @@ export const api = {
   getSchedule: (date) => request(`/schedule${query({ date })}`),
 
   getAppointments: (params) => request(`/appointments${query(params)}`),
+  createAppointment: (data) => request('/appointments', { method: 'POST', body: JSON.stringify(data) }),
+  getAvailability: (barberId, serviceId, date) =>
+    request(`/availability${query({ barberId, serviceId, date })}`),
+  searchUsers: (q) => request(`/users/search${query({ q })}`),
   updateAppointmentStatus: (id, status) =>
     request(`/appointments/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   setAppointmentPayment: (id, data) =>
@@ -99,6 +103,10 @@ export const api = {
   deleteService: (id) => request(`/services/${id}`, { method: 'DELETE' }),
 
   getUsers: (params) => request(`/users${query(params)}`),
+
+  getTimeBlocks: (from, to) => request(`/time-blocks${query({ from, to })}`),
+  createTimeBlock: (data) => request('/time-blocks', { method: 'POST', body: JSON.stringify(data) }),
+  deleteTimeBlock: (id) => request(`/time-blocks/${id}`, { method: 'DELETE' }),
 
   getSettings: () => request('/settings'),
   updateSettings: (data) => request('/settings', { method: 'PATCH', body: JSON.stringify(data) }),

@@ -22,6 +22,9 @@ router.get('/schedule', adminController.getDaySchedule);
 
 // Bronlar
 router.get('/appointments', adminController.listAppointments);
+router.post('/appointments', adminController.createAppointment);
+router.get('/availability', adminController.getAvailability);
+router.get('/users/search', adminController.searchUsers);
 router.patch('/appointments/:id/status', adminController.updateAppointmentStatus);
 router.patch('/appointments/:id/payment', adminController.setAppointmentPayment);
 router.delete('/appointments/:id', adminController.deleteAppointment);
@@ -35,6 +38,11 @@ router.delete('/barbers/:id', adminController.deleteBarber);
 // Ish jadvali
 router.get('/barbers/:id/working-hours', adminController.getWorkingHours);
 router.put('/barbers/:id/working-hours', adminController.updateWorkingHours);
+
+// Vaqt bloklash (tanaffus, dam olish kuni)
+router.get('/time-blocks', adminController.listTimeBlocks);
+router.post('/time-blocks', adminController.createTimeBlock);
+router.delete('/time-blocks/:id', adminController.deleteTimeBlock);
 
 // Xizmatlar
 router.get('/services', adminController.listServices);

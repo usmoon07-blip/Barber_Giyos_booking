@@ -6,7 +6,34 @@ const { detectLanguage } = require('../utils/i18n');
 /** Mijozlar bilan ishlash. */
 const UserModel = {
   findByTelegramId(telegramId) {
+    if (!telegramId) return Promise.resolve(null);
     return prisma.user.findUnique({ where: { telegramId: String(telegramId) } });
+  },
+
+  /** Telefon raqami bo'yicha qidirish (qo'lda kiritishda takrorlanmaslik uchun). */
+  findByPhone(phone) {
+    const digits = String(phone || '').replace(/\D/g, '');
+    if (digits.length < 9) return Promise.resolve(null);
+
+    // Oxirgi 9 raqam bo'yicha solishtiramiz (+998 bor-yo'qligidan qat'i nazar)
+    return prisma.user.findFirst({
+      where: { phone: { endsWith: digits.slice(-9) } },
+      orderBy: { createdAt: 'asc' },
+    });
+  },
+
+  /** Sartarosh qo'lda kiritgan mijoz (Telegram akkaunti yo'q). */
+  createWalkIn({ firstName, phone, language = 'uz' }) {
+    return prisma.user.create({
+      data: {
+        telegramId: null,
+        source: 'WALK_IN',
+        firstName: String(firstName).trim().slice(0, 60),
+        phone: phone ? String(phone).trim().slice(0, 20) : null,
+        language,
+        nameCustom: true,
+      },
+    });
   },
 
   findById(id) {

@@ -5,11 +5,13 @@ import { Toast } from './ui';
 
 const LINKS = [
   { to: '/', label: 'Dashboard', icon: '📊', end: true },
+  { to: '/schedule', label: 'Kun jadvali', icon: '🗓' },
   { to: '/appointments', label: 'Bronlar', icon: '📅' },
   { to: '/reports', label: 'Hisobot', icon: '💰' },
   { to: '/barbers', label: 'Barberlar', icon: '💈' },
   { to: '/services', label: 'Xizmatlar', icon: '✂️' },
   { to: '/working-hours', label: 'Ish jadvali', icon: '🕐' },
+  { to: '/time-blocks', label: 'Bloklash', icon: '🚫' },
   { to: '/users', label: 'Mijozlar', icon: '👥' },
   { to: '/settings', label: 'Sozlamalar', icon: '⚙️' },
 ];

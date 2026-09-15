@@ -9,6 +9,7 @@ const { config, validateConfig } = require('./config/default');
 const { connectDatabase, disconnectDatabase } = require('./database/connection');
 const { startBot, stopBot } = require('./core/bot');
 const { startReminderJob } = require('./jobs/reminder.job');
+const { startAutoCompleteJob } = require('./jobs/autocomplete.job');
 const { notFoundHandler, errorHandler } = require('./middlewares/error.middleware');
 
 const botRoutes = require('./routes/bot.routes');
@@ -103,6 +104,7 @@ async function bootstrap() {
 
   await startBot();
   startReminderJob();
+  startAutoCompleteJob();
 
   const shutdown = async (signal) => {
     console.log(`\n${signal} — to'xtatilmoqda...`);

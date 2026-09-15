@@ -155,9 +155,32 @@ Shu `https://...` havolani nusxa oling.
 
 Tayyor! Botga `/start` yozing va **💈 Bron qilish** tugmasini bosing.
 
-> ⚠️ Ngrok'ning bepul versiyasida har safar ishga tushirganda **havola
-> o'zgaradi**. Shunda `.env` dagi `MINIAPP_URL` ni yangilab, serverni qayta
-> ishga tushiring va BotFather'dagi havolani ham yangilang.
+### ⭐ Doimiy domen — har kuni qayta sozlamaslik uchun
+
+Odatda ngrok havolasi har safar o'zgaradi. Buni bir marta hal qilish mumkin:
+
+1. [dashboard.ngrok.com](https://dashboard.ngrok.com) ga kiring
+2. Chap menyudan **Domains** → **+ New Domain** tugmasini bosing
+3. Bepul rejada **bitta doimiy domen** beriladi, masalan:
+   `giyos-barbershop.ngrok-free.app`
+4. `windows\4-NGROK.bat` faylini **Notepad**'da oching
+5. Quyidagi qatorni toping, boshidagi `REM` ni o'chiring va o'z domeningizni yozing:
+
+```bat
+set NGROK_DOMAIN=giyos-barbershop.ngrok-free.app
+```
+
+6. Saqlang. Endi `4-NGROK.bat` har safar **bir xil havolani** beradi.
+7. `.env` dagi `MINIAPP_URL` va BotFather'dagi Menu Button'ni **bir marta**
+   shu havolaga sozlang — boshqa tegmaysiz.
+
+> Agar hisobingizda **Domains** bo'limi bo'lmasa, [Cloudflare
+> Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)
+> ham bepul va doimiy havola beradi.
+
+> ⚠️ Doimiy domen sozlanmagan bo'lsa, ngrok havolasi **har safar o'zgaradi**.
+> Shunda `.env` dagi `MINIAPP_URL` ni yangilab, serverni qayta ishga tushiring
+> va BotFather'dagi havolani ham yangilang.
 
 ---
 
@@ -170,11 +193,13 @@ Kirish ma'lumotlari — `.env` faylidagi `ADMIN_USERNAME` va `ADMIN_PASSWORD`.
 | Bo'lim          | Imkoniyatlar                                                 |
 | --------------- | ------------------------------------------------------------ |
 | 📊 Dashboard    | Bugungi bronlar, tushum, mijozlar, diagramma                 |
-| 📅 Bronlar      | Filtrlash, holat va to'lovni belgilash, o'chirish             |
+| 🗓 Kun jadvali  | Bugungi kun barberlar bo'yicha: kim, qachon, qayer bo'sh     |
+| 📅 Bronlar      | **Qo'lda bron qo'shish**, filtrlash, holat va to'lov          |
 | 💰 Hisobot      | Kunlik/oylik tushum, naqd va karta ajratilgan, CSV eksport    |
 | 💈 Barberlar    | Qo'shish, tahrirlash, faol/faol emas, o'chirish              |
 | ✂️ Xizmatlar    | Narx, tavsif, rasm, kategoriya, davomiylik                   |
 | 🕐 Ish jadvali  | Har bir barber uchun 7 kunlik jadval va dam olish kunlari    |
+| 🚫 Bloklash     | Tanaffus, dam olish kuni, bayram — o'sha vaqtga bron tushmaydi |
 | 👥 Mijozlar     | Ro'yxat va qidiruv                                           |
 | ⚙️ Sozlamalar   | Nom, telefon, manzil, Instagram, **karta raqami**, qoidalar  |
 
@@ -232,13 +257,80 @@ Quyida uchta jadval: **kunlar**, **barberlar** va **xizmatlar** bo'yicha
 taqsimot. **⬇ Excel (CSV)** tugmasi hisobotni faylga yuklab beradi — uni
 Excel yoki Google Sheets'da ochasiz.
 
-> 💡 Tushum to'g'ri chiqishi uchun xizmat ko'rsatilgandan keyin bronni
-> **«Yakunlangan»** deb belgilang va pulni olganingizda **«To'langan»** tugmasini
-> bosing. Shunda kunlik va oylik raqamlar aniq bo'ladi.
+> 💡 Tushum to'g'ri chiqishi uchun pulni olganingizda **«To'langan»** tugmasini
+> bosing. Bronni «Yakunlangan» deb belgilashni unutsangiz ham xavotir olmang —
+> vaqti o'tgan tasdiqlangan bronlar **avtomatik** yakunlanadi (Sozlamalardan
+> o'chirsa bo'ladi).
+
+### Bron holatlari
+
+| Holat | Qachon |
+|---|---|
+| 🕐 Kutilmoqda | Mijoz bron qildi, siz hali tasdiqlamadingiz |
+| ✅ Tasdiqlangan | Siz tasdiqladingiz |
+| 🎉 Yakunlangan | Xizmat ko'rsatildi — tushumga qo'shiladi |
+| ❌ Bekor qilingan | Bron bekor qilindi |
+| 🚫 Kelmadi | Mijoz kelmay qoldi — tushumga qo'shilmaydi, alohida sanaladi |
+
+Hisobot sahifasida «Kelmagan mijozlar» soni alohida ko'rsatiladi.
+
+### Mijoz bronni qachon bekor qila oladi
+
+Sozlamalardagi **«Bekor qilish muddati»** — masalan 2 soat. Mijoz tashrifga
+2 soatdan kam qolganda bronni bekor qila olmaydi, unga «sartaroshxonaga
+qo'ng'iroq qiling» deb yoziladi. Shunda vaqt behuda yo'qolmaydi.
 
 ---
 
-## 🤖 6. Bot imkoniyatlari
+## 📞 6. Qo'lda bron va vaqtni bloklash
+
+### Telefon orqali yoki eshikdan kelgan mijoz
+
+Mijoz qo'ng'iroq qilsa yoki to'g'ridan-to'g'ri kelsa, uni tizimga kiritish
+kerak — aks holda o'sha vaqt Mini App'da bo'sh ko'rinaveradi va ikkinchi mijoz
+band qilib qo'yadi.
+
+**Admin Panel → 📅 Bronlar → + Yangi bron**
+
+1. Mijoz ismi va telefoni — agar u avval kelgan bo'lsa, yozayotganingizda
+   ro'yxatdan chiqadi, bosib tanlaysiz (mijoz ikki marta yaratilmaydi)
+2. Xizmat va barber
+3. Sana → bo'sh vaqtlar chiqadi, bosib tanlaysiz
+   (yoki vaqtni qo'lda yozasiz — ish jadvalidan tashqarida ham bo'lishi mumkin)
+4. To'lov turi va «Pul olindi» belgisi
+
+Mijozning Telegram akkaunti bo'lishi **shart emas**. Agar bo'lsa, unga bot
+orqali tasdiq xabari ham boradi.
+
+### Tanaffus va dam olish kuni
+
+**Admin Panel → 🚫 Bloklash → + Vaqt bloklash**
+
+- Tez tugmalar: *Tushlik 13:00–14:00*, *Kunning yarmi*, *Butun kun yopiq*
+- Bitta barber uchun yoki **barcha barberlar** uchun
+- Sabab yozib qo'yasiz (masalan «To'yga boraman»)
+
+Bloklangan vaqt Mini App'da **butunlay ko'rinmaydi** — mijoz u yerga bron
+qila olmaydi.
+
+> Agar o'sha vaqtda allaqachon bron bo'lsa, tizim darhol ogohlantiradi va
+> mijozning telefon raqamini ko'rsatadi — qo'ng'iroq qilib ko'chirasiz.
+
+### Kun jadvali
+
+**Admin Panel → 🗓 Kun jadvali** — ertalab telefondan bir qarashda ko'rasiz:
+
+- har bir barberning kuni vaqt bo'yicha
+- qaysi vaqtlar **bo'sh** (necha daqiqa)
+- kim **yo'lga tushgan** (🚗)
+- bugungi kutilayotgan tushum
+
+Bron ustiga bossangiz — mijoz telefoni, holatni o'zgartirish va «Pul olindi»
+tugmasi chiqadi.
+
+---
+
+## 🤖 7. Bot imkoniyatlari
 
 | Tugma / buyruq      | Nima qiladi                                    |
 | ------------------- | ---------------------------------------------- |
@@ -267,7 +359,7 @@ Excel yoki Google Sheets'da ochasiz.
 
 ---
 
-## 🔒 7. Xavfsizlik
+## 🔒 8. Xavfsizlik
 
 - Mini App har bir so'rovda Telegram imzolagan `initData` yuboradi, server uni
   bot tokeni bilan **HMAC-SHA256** orqali tekshiradi — soxta so'rov o'tmaydi
@@ -278,7 +370,7 @@ Excel yoki Google Sheets'da ochasiz.
 
 ---
 
-## 🛠 8. Foydali buyruqlar
+## 🛠 9. Foydali buyruqlar
 
 ```bash
 # Bazani ko'rish / tahrirlash (brauzerda ochiladi)
@@ -297,7 +389,7 @@ cd miniapp && npm run dev      # http://localhost:5173
 
 ---
 
-## ❓ 9. Tez-tez uchraydigan muammolar
+## ❓ 10. Tez-tez uchraydigan muammolar
 
 **"Can't reach database server"**
 Neon bazasi uxlab qolgan bo'lishi mumkin. [console.neon.tech](https://console.neon.tech)

@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import api from '../api';
 import { useAdmin } from '../context/AdminContext';
+import NewAppointmentModal from '../components/NewAppointmentModal';
 import {
   Empty,
   Loading,
+  STATUSES,
   STATUS_LABELS,
   formatDate,
   formatMoney,
   todayStr,
 } from '../components/ui';
-
-const STATUSES = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'];
 
 export default function Appointments() {
   const { showToast } = useAdmin();
@@ -20,7 +20,9 @@ export default function Appointments() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [barbers, setBarbers] = useState([]);
+  const [services, setServices] = useState([]);
   const [busyId, setBusyId] = useState(null);
+  const [creating, setCreating] = useState(false);
 
   const [filters, setFilters] = useState({
     status: '',
@@ -50,6 +52,7 @@ export default function Appointments() {
 
   useEffect(() => {
     api.getBarbers().then(setBarbers).catch(() => {});
+    api.getServices().then(setServices).catch(() => {});
   }, []);
 
   // Sahifa ochiq turganda ham yangi bronlar ko'rinishi uchun
@@ -123,6 +126,9 @@ export default function Appointments() {
           <p className="page-subtitle">Jami {total} ta</p>
         </div>
         <div className="btn-row">
+          <button type="button" className="btn btn--primary" onClick={() => setCreating(true)}>
+            + Yangi bron
+          </button>
           <button type="button" className="btn btn--secondary" onClick={() => setFilter('date', todayStr())}>
             Bugungi
           </button>
@@ -249,6 +255,11 @@ export default function Appointments() {
                           )}
                           {appointment.user.username ? ` · @${appointment.user.username}` : ''}
                         </div>
+                        {appointment.source === 'ADMIN' ? (
+                          <span className="pill" style={{ marginTop: 4 }}>
+                            ✍️ Qo'lda kiritilgan
+                          </span>
+                        ) : null}
                       </td>
                       <td>{appointment.barber.name}</td>
                       <td>
@@ -356,6 +367,14 @@ export default function Appointments() {
           <Empty icon="📅" title="Bron topilmadi" text="Filtrlarni o'zgartirib ko'ring" />
         )}
       </div>
+
+      <NewAppointmentModal
+        open={creating}
+        onClose={() => setCreating(false)}
+        barbers={barbers}
+        services={services}
+        onCreated={load}
+      />
     </>
   );
 }

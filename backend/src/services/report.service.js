@@ -19,6 +19,7 @@ function emptyBucket() {
     count: 0,
     completedCount: 0,
     cancelledCount: 0,
+    noShowCount: 0,
     pendingCount: 0,
     completedRevenue: 0,
     paidTotal: 0,
@@ -34,6 +35,12 @@ function addToBucket(bucket, appointment) {
 
   if (appointment.status === 'CANCELLED') {
     bucket.cancelledCount += 1;
+    return;
+  }
+
+  // Kelmagan mijoz tushum ham, kutilayotgan pul ham emas
+  if (appointment.status === 'NO_SHOW') {
+    bucket.noShowCount += 1;
     return;
   }
 

@@ -5,6 +5,7 @@ const AppointmentModel = require('../models/Appointment');
 const BarberModel = require('../models/Barber');
 const ServiceModel = require('../models/Service');
 const SiteSettingModel = require('../models/SiteSetting');
+const TimeBlockModel = require('../models/TimeBlock');
 const { ApiError } = require('../utils/errors');
 const {
   todayStr,
@@ -12,8 +13,10 @@ const {
   toMinutes,
   toTime,
   toDbDate,
+  fromDbDate,
   weekdayOf,
   addDays,
+  toInstant,
   isValidDateStr,
   isValidTimeStr,
 } = require('../utils/time');
@@ -26,7 +29,19 @@ const BookingService = {
    *  1) tekshiruv va yozuv bitta Serializable tranzaksiyada bajariladi;
    *  2) bazada @@unique([barberId, date, startTime]) cheklovi qo'shimcha himoya beradi.
    */
-  async createAppointment({ userId, barberId, serviceId, date, startTime, note, paymentMethod }) {
+  async createAppointment({
+    userId,
+    barberId,
+    serviceId,
+    date,
+    startTime,
+    note,
+    paymentMethod,
+    // Sartarosh qo'lda kiritganda bir nechta cheklov yumshatiladi
+    byAdmin = false,
+    isPaid = false,
+    status,
+  }) {
     if (!isValidDateStr(date)) throw ApiError.badRequest('Sana formati noto\'g\'ri', 'INVALID_DATE');
     if (!isValidTimeStr(startTime)) throw ApiError.badRequest('Vaqt formati noto\'g\'ri', 'INVALID_TIME');
 
@@ -40,13 +55,14 @@ const BookingService = {
     if (!service || !service.isActive) throw ApiError.notFound('Xizmat topilmadi');
 
     const today = todayStr();
-    if (date < today) throw ApiError.badRequest('O\'tib ketgan sanaga bron qilib bo\'lmaydi', 'PAST_DATE');
-    if (date > addDays(today, settings.maxAdvanceDays)) {
+    if (date < today) throw ApiError.badRequest("O'tib ketgan sanaga bron qilib bo'lmaydi", 'PAST_DATE');
+    if (!byAdmin && date > addDays(today, settings.maxAdvanceDays)) {
       throw ApiError.badRequest('Bu sana juda uzoq', 'TOO_FAR');
     }
 
     const workingHour = barber.workingHours.find((hour) => hour.weekday === weekdayOf(date));
-    if (!workingHour || !workingHour.isWorking) {
+    // Sartarosh o'zi kiritganda ish jadvalidan tashqarida ham yoza oladi
+    if (!byAdmin && (!workingHour || !workingHour.isWorking)) {
       throw ApiError.conflict('Bu kuni barber ishlamaydi', 'DAY_OFF');
     }
 
@@ -54,16 +70,27 @@ const BookingService = {
     const endMinutes = startMinutes + service.duration;
     const endTime = toTime(endMinutes);
 
-    if (startMinutes < toMinutes(workingHour.startTime) || endMinutes > toMinutes(workingHour.endTime)) {
-      throw ApiError.conflict('Tanlangan vaqt ish vaqtidan tashqarida', 'OUT_OF_HOURS');
-    }
+    if (!byAdmin) {
+      if (startMinutes < toMinutes(workingHour.startTime) || endMinutes > toMinutes(workingHour.endTime)) {
+        throw ApiError.conflict('Tanlangan vaqt ish vaqtidan tashqarida', 'OUT_OF_HOURS');
+      }
 
-    if (date === today && startMinutes < nowMinutes() + settings.minLeadMinutes) {
-      throw ApiError.conflict('Bu vaqt allaqachon o\'tib ketgan', 'TOO_LATE');
-    }
+      if (date === today && startMinutes < nowMinutes() + settings.minLeadMinutes) {
+        throw ApiError.conflict("Bu vaqt allaqachon o'tib ketgan", 'TOO_LATE');
+      }
 
-    if ((startMinutes - toMinutes(workingHour.startTime)) % settings.slotStep !== 0) {
-      throw ApiError.badRequest('Vaqt noto\'g\'ri tanlangan', 'INVALID_SLOT');
+      if ((startMinutes - toMinutes(workingHour.startTime)) % settings.slotStep !== 0) {
+        throw ApiError.badRequest("Vaqt noto'g'ri tanlangan", 'INVALID_SLOT');
+      }
+
+      // Bloklangan vaqtga mijoz yoza olmaydi
+      const blocks = await TimeBlockModel.findForDate(date, barberId);
+      const blocked = blocks.some((block) => {
+        if (block.isFullDay) return true;
+        return startMinutes < toMinutes(block.endTime) && endMinutes > toMinutes(block.startTime);
+      });
+
+      if (blocked) throw ApiError.conflict('Bu vaqt band qilingan', 'BLOCKED');
     }
 
     const method = paymentMethod === 'CARD' ? 'CARD' : 'CASH';
@@ -83,8 +110,11 @@ const BookingService = {
       startTime,
       endTime,
       totalPrice: service.price,
-      status: 'PENDING',
+      status: status || (byAdmin ? 'CONFIRMED' : 'PENDING'),
+      source: byAdmin ? 'ADMIN' : 'MINIAPP',
       paymentMethod: method,
+      isPaid: Boolean(isPaid),
+      paidAt: isPaid ? new Date() : null,
       note: note ? String(note).slice(0, 300) : null,
     };
 
@@ -127,7 +157,11 @@ const BookingService = {
     }
   },
 
-  /** Mijoz o'z bronini bekor qiladi. */
+  /**
+   * Mijoz o'z bronini bekor qiladi.
+   * Tashrifga juda oz vaqt qolgan bo'lsa, bekor qilish taqiqlanadi —
+   * aks holda sartarosh o'sha vaqtni boshqa hech kimga bera olmaydi.
+   */
   async cancelByUser(appointmentId, userId) {
     const appointment = await AppointmentModel.findById(appointmentId);
 
@@ -135,8 +169,22 @@ const BookingService = {
     if (appointment.userId !== Number(userId)) throw ApiError.forbidden();
 
     if (appointment.status === 'CANCELLED') return appointment;
-    if (appointment.status === 'COMPLETED') {
-      throw ApiError.conflict('Yakunlangan bronni bekor qilib bo\'lmaydi', 'ALREADY_COMPLETED');
+    if (appointment.status === 'COMPLETED' || appointment.status === 'NO_SHOW') {
+      throw ApiError.conflict("Bu bronni bekor qilib bo'lmaydi", 'ALREADY_COMPLETED');
+    }
+
+    const settings = await SiteSettingModel.get();
+
+    if (settings.cancelDeadlineHours > 0) {
+      const startsAt = toInstant(fromDbDate(appointment.date), appointment.startTime).getTime();
+      const hoursLeft = (startsAt - Date.now()) / 3600000;
+
+      if (hoursLeft < settings.cancelDeadlineHours) {
+        throw ApiError.conflict(
+          `Bronni tashrifdan kamida ${settings.cancelDeadlineHours} soat oldin bekor qilish mumkin. Iltimos, sartaroshxonaga qo'ng'iroq qiling.`,
+          'CANCEL_TOO_LATE'
+        );
+      }
     }
 
     return AppointmentModel.updateStatus(appointmentId, 'CANCELLED');

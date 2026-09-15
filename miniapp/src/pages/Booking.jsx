@@ -212,7 +212,7 @@ export default function Booking() {
       setFormError(known || requestError.message);
 
       // Vaqt band bo'lib qolgan bo'lsa — vaqt tanlash qadamiga qaytaramiz
-      if (requestError.code === 'SLOT_TAKEN' || requestError.code === 'TOO_LATE') {
+      if (['SLOT_TAKEN', 'TOO_LATE', 'BLOCKED', 'DAY_OFF'].includes(requestError.code)) {
         setStartTime(null);
         setStep(STEP_TIME);
         showToast(known || requestError.message, 'error');
@@ -475,7 +475,13 @@ export default function Booking() {
         ) : (
           <EmptyState
             icon="🕐"
-            title={slotReason === 'DAY_OFF' ? text.booking.dayOff : text.booking.noSlots}
+            title={
+              slotReason === 'DAY_OFF'
+                ? text.booking.dayOff
+                : slotReason === 'BLOCKED'
+                  ? text.booking.blocked
+                  : text.booking.noSlots
+            }
             action={
               <button
                 type="button"

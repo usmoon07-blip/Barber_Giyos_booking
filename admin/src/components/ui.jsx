@@ -109,7 +109,29 @@ export const STATUS_LABELS = {
   CONFIRMED: 'Tasdiqlangan',
   COMPLETED: 'Yakunlangan',
   CANCELLED: 'Bekor qilingan',
+  NO_SHOW: 'Kelmadi',
 };
+
+export const STATUSES = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'];
+
+/** "HH:mm" -> daqiqa */
+export function toMinutes(time) {
+  const [hours, minutes] = String(time || '0:0').split(':').map(Number);
+  return (hours || 0) * 60 + (minutes || 0);
+}
+
+/** daqiqa -> "HH:mm" */
+export function toTime(minutes) {
+  const total = Math.max(0, minutes);
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+}
+
+/** Sanaga kun qo'shadi: "2026-09-15" + 1 -> "2026-09-16" */
+export function addDays(dateStr, days) {
+  const date = new Date(`${dateStr}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
 
 export const PAYMENT_LABELS = {
   CASH: '💵 Naqd',

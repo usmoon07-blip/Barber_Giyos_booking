@@ -170,6 +170,11 @@ export default function Reports() {
     { label: '💳 Karta', value: `${formatMoney(totals.card)} so'm` },
     { label: '⏳ Kutilayotgan tushum', value: `${formatMoney(totals.expected)} so'm`, hint: 'hali bajarilmagan bronlar' },
     { label: '🧾 Bajarilgan xizmatlar', value: totals.completedCount },
+    {
+      label: '🚫 Kelmagan mijozlar',
+      value: totals.noShowCount || 0,
+      hint: totals.cancelledCount ? `${totals.cancelledCount} ta bekor qilingan` : null,
+    },
     { label: '📊 O\'rtacha chek', value: `${formatMoney(totals.avgCheck)} so'm` },
   ];
 

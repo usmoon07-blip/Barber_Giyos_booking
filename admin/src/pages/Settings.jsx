@@ -60,6 +60,8 @@ export default function Settings() {
         minLeadMinutes: Number(form.minLeadMinutes),
         maxAdvanceDays: Number(form.maxAdvanceDays),
         reminderHours: Number(form.reminderHours),
+        cancelDeadlineHours: Number(form.cancelDeadlineHours ?? 2),
+        autoComplete: form.autoComplete !== false,
       };
 
       const updated = await api.updateSettings(payload);
@@ -233,6 +235,39 @@ export default function Settings() {
             <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '6px 0 0' }}>
               Masalan 30 — mijoz 30 daqiqadan kamroq qolgan vaqtga bron qila olmaydi
             </p>
+          </div>
+        </div>
+
+        <div className="field-row">
+          <div className="field">
+            <label className="field__label">Bekor qilish muddati (soat)</label>
+            <input
+              type="number"
+              className="field__input"
+              value={form.cancelDeadlineHours ?? 2}
+              onChange={(event) => update('cancelDeadlineHours', event.target.value)}
+            />
+            <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '6px 0 0' }}>
+              Masalan 2 — mijoz tashrifga 2 soatdan kam qolganda bronni bekor qila olmaydi.
+              0 — istalgan vaqtda bekor qilsa bo'ladi.
+            </p>
+          </div>
+
+          <div className="field" style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <div style={{ width: '100%' }}>
+              <label className="checkbox" style={{ marginBottom: 8 }}>
+                <input
+                  type="checkbox"
+                  checked={form.autoComplete !== false}
+                  onChange={(event) => update('autoComplete', event.target.checked)}
+                />
+                <span>Vaqti o'tgan bronlarni avtomatik yakunlash</span>
+              </label>
+              <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: 0 }}>
+                Tasdiqlangan bron vaqti tugagach, 30 daqiqadan keyin o'zi «Yakunlangan»
+                bo'ladi — hisobotdagi tushum doim to'g'ri chiqadi.
+              </p>
+            </div>
           </div>
         </div>
 

@@ -17,6 +17,17 @@ enum AppointmentStatus {
   CONFIRMED // Tasdiqlangan
   COMPLETED // Yakunlangan
   CANCELLED // Bekor qilingan
+  NO_SHOW // Mijoz kelmadi
+}
+
+enum UserSource {
+  TELEGRAM // Mini App yoki bot orqali
+  WALK_IN // Sartarosh qo'lda kiritgan (telefon yoki eshikdan)
+}
+
+enum AppointmentSource {
+  MINIAPP // Mijoz o'zi bron qilgan
+  ADMIN // Sartarosh qo'lda kiritgan
 }
 
 enum PaymentMethod {
@@ -34,8 +45,9 @@ enum ServiceCategory {
 
 // ─── Mijoz ──────────────────────────────────────────────────────────
 model User {
-  id         Int      @id @default(autoincrement())
-  telegramId String   @unique
+  id         Int        @id @default(autoincrement())
+  telegramId String?    @unique
+  source     UserSource @default(TELEGRAM)
   firstName  String
   lastName   String?
   username   String?
@@ -67,6 +79,7 @@ model Barber {
 
   workingHours WorkingHour[]
   appointments Appointment[]
+  timeBlocks   TimeBlock[]
 
   @@index([isActive, sortOrder])
 }
@@ -105,6 +118,7 @@ model Appointment {
   endTime        String // "HH:mm"
   totalPrice     Int
   status         AppointmentStatus @default(PENDING)
+  source         AppointmentSource @default(MINIAPP)
   paymentMethod  PaymentMethod     @default(CASH)
   isPaid         Boolean           @default(false)
   paidAt         DateTime?
@@ -123,6 +137,22 @@ model Appointment {
   @@index([date, status])
   @@index([userId, date])
   @@index([date, isPaid])
+}
+
+// ─── Vaqtinchalik bloklash (tanaffus, dam olish, bayram) ────────────
+model TimeBlock {
+  id        Int      @id @default(autoincrement())
+  barberId  Int? // bo'sh bo'lsa — barcha barberlar uchun
+  date      DateTime @db.Date
+  startTime String   @default("09:00")
+  endTime   String   @default("20:00")
+  isFullDay Boolean  @default(false)
+  reason    String?
+  createdAt DateTime @default(now())
+
+  barber Barber? @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
+  @@index([date, barberId])
 }
 
 // ─── Ish jadvali ────────────────────────────────────────────────────
@@ -164,5 +194,7 @@ model SiteSetting {
   minLeadMinutes     Int      @default(30) // eng kamida necha daqiqa oldin bron
   maxAdvanceDays     Int      @default(21) // necha kun oldinga bron qilish mumkin
   reminderHours      Int      @default(2) // necha soat oldin eslatma
+  cancelDeadlineHours Int     @default(2) // necha soat qolganda bekor qilib bo'lmaydi
+  autoComplete       Boolean  @default(true) // vaqti o'tgan bronlarni avtomatik yakunlash
   updatedAt          DateTime @updatedAt
 }

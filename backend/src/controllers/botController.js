@@ -317,8 +317,14 @@ const botController = {
       await ctx.editMessageReplyMarkup({ inline_keyboard: [] }).catch(() => {});
 
       NotificationService.notifyAdminsCancelled(appointment).catch(() => {});
-    } catch (_error) {
-      await ctx.answerCbQuery(text.cancelTooLate, { show_alert: true });
+    } catch (error) {
+      const settings = await SiteSettingModel.get();
+      const message =
+        error.code === 'CANCEL_TOO_LATE'
+          ? text.cancelTooLate(settings.cancelDeadlineHours)
+          : error.message || text.error;
+
+      await ctx.answerCbQuery(message, { show_alert: true });
     }
   },
 

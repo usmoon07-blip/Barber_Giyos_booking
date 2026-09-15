@@ -16,7 +16,8 @@ function attachBot(bot) {
 }
 
 async function sendMessage(chatId, text, extra = {}) {
-  if (!botInstance) return null;
+  // Qo'lda kiritilgan mijozning Telegram akkaunti bo'lmaydi
+  if (!botInstance || !chatId) return null;
   try {
     return await botInstance.telegram.sendMessage(chatId, text, {
       parse_mode: 'HTML',
