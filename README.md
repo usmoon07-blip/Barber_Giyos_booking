@@ -27,17 +27,80 @@ Hammasi bitta kompyuterda (localhost) ishlaydi.
 
 ---
 
-## ⚡ Tez boshlash (Windows)
+## ⚡ Ishga tushirish (Windows) — 3 ta fayl
 
-1. **Node.js** o'rnating — [nodejs.org](https://nodejs.org) → **LTS** versiyasi
-2. `backend\.env.example` faylidan nusxa oling, nomini `.env` ga o'zgartiring
-   va o'z ma'lumotlaringizni kiriting
-3. `windows\1-ORNATISH.bat` — ikki marta bosing, tugashini kuting
-4. `windows\2-ISHGA-TUSHIRISH.bat` — server va bot ishga tushadi
-5. `windows\4-NGROK.bat` — Telegram uchun HTTPS havola oling
-6. Olingan havolani BotFather'ga Mini App sifatida ulang
+Loyihada uchta asosiy fayl bor. Kod bilmasangiz ham yetarli.
 
-Batafsili — quyida.
+| Fayl | Nima qiladi |
+|---|---|
+| **`BOSHLASH.bat`** | Hamma ishni bajaradi: Node.js ni o'rnatadi, sozlamalarni so'raydi, bazani tayyorlaydi, serverni ishga tushiradi |
+| **`NGROK.bat`** | Mini App uchun https havola oladi va sozlamalarga **o'zi yozadi** |
+| **`TEKSHIRISH.bat`** | Nimadir ishlamasa — sababini va yechimini oddiy tilda aytadi |
+
+### 1-qadam
+
+**`BOSHLASH.bat`** faylini ikki marta bosing.
+
+U sizdan faqat **uchta narsa** so'raydi:
+
+| Nima | Qayerdan olinadi |
+|---|---|
+| Baza manzili | [neon.tech](https://neon.tech) → Dashboard → **Connect** → Connection string |
+| Bot tokeni | Telegram → [@BotFather](https://t.me/BotFather) → `/mybots` → **API Token** |
+| Telegram ID | Telegram → [@userinfobot](https://t.me/userinfobot) → **Start** |
+
+Qolganini o'zi qiladi. Birinchi safar 5–10 daqiqa, keyingi safarlar bir necha soniya.
+
+Tugagach brauzerda admin panel o'zi ochiladi, Telegramda esa botga `/start` yozsangiz javob beradi.
+
+> Node.js o'rnatilmagan bo'lsa, `BOSHLASH.bat` uni **o'zi o'rnatadi**. Windows
+> ruxsat so'rasa «Ha» deng. Agar o'rnatolmasa, [nodejs.org](https://nodejs.org)
+> dan LTS versiyasini o'rnatib, kompyuterni qayta yoqing.
+
+### 2-qadam — Mini App
+
+Botdagi «💈 Bron qilish» tugmasi ishlashi uchun https havola kerak.
+
+**`BOSHLASH.bat` ishlab turganda** `NGROK.bat` ni oching. U:
+
+1. Ngrok'ni o'zi yuklab oladi
+2. Hisobingiz tokenini bir marta so'raydi ([ngrok.com/signup](https://ngrok.com/signup))
+3. Havolani olib, `backend\.env` fayliga **o'zi yozadi**
+4. BotFather'da nima qilish kerakligini ekranda ko'rsatadi
+
+Havolani qo'lda ko'chirib o'tirish shart emas.
+
+> 💡 **Havola har safar o'zgarmasligi uchun:** [dashboard.ngrok.com](https://dashboard.ngrok.com)
+> → **Domains** → **+ New Domain** (bepul) → olingan domenni
+> `windows\ngrok-domen.txt` fayliga yozing. Shundan keyin BotFather'ni
+> boshqa sozlamaysiz.
+
+### Har kuni ishlatish
+
+1. `BOSHLASH.bat` — ikki marta bosing (oynani yopmang)
+2. `NGROK.bat` — ikki marta bosing (bu oynani ham yopmang)
+
+Tamom.
+
+### Nimadir ishlamasa
+
+`TEKSHIRISH.bat` ni oching. U har bir qismni tekshirib, muammoni va
+yechimini ko'rsatadi:
+
+```
+  ✅ Node.js — versiya 22.11.0
+  ✅ Ma'lumotlar bazasi — ulanish muvaffaqiyatli
+  ✅ Telegram bot — @giyos_barber_bot — token to'g'ri
+  ⚠️  Mini App havolasi yo'q
+      👉 NGROK.bat ni ishga tushiring
+```
+
+### Qo'shimcha fayllar
+
+| Fayl | Nima qiladi |
+|---|---|
+| `YANGILASH.bat` | Dasturning yangi versiyasini yuklaydi (ma'lumotlar saqlanadi) |
+| `windows\BAZANI-KORISH.bat` | Bazani brauzerda ochadi (Prisma Studio) |
 
 ---
 
@@ -78,7 +141,8 @@ ALLOW_DEV_AUTH="false"
 
 ## 🚀 2. O'rnatish (qo'lda, terminal orqali)
 
-`.bat` fayllar o'rniga qo'lda qilmoqchi bo'lsangiz:
+> Bu bo'lim ilg'or foydalanuvchilar uchun. Oddiy holatda `BOSHLASH.bat`
+> yetarli — quyidagilarning hammasini u o'zi bajaradi.
 
 ```bash
 # Backend

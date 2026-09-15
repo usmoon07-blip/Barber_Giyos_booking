@@ -1,0 +1,9 @@
+# Ngrok doimiy domeni
+#
+# Bepul domen olish: https://dashboard.ngrok.com -> Domains -> + New Domain
+#
+# Domenni quyidagi qatorga yozing (# belgisisiz), masalan:
+# giyos-barber.ngrok-free.app
+#
+# Shundan keyin havola hech qachon o'zgarmaydi va BotFather'ni
+# qayta sozlash kerak bo'lmaydi.
