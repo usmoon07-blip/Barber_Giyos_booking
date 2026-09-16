@@ -22,21 +22,29 @@ function verifyInitData(initData, botToken, maxAgeSeconds = 86400) {
   const hash = params.get('hash');
   if (!hash) return null;
   params.delete('hash');
-  params.delete('signature');
 
-  const dataCheckString = Array.from(params.entries())
-    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-    .map(([key, value]) => `${key}=${value}`)
-    .join('\n');
+  const buildCheckString = (entries) =>
+    entries
+      .slice()
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([key, value]) => `${key}=${value}`)
+      .join('\n');
+
+  const allEntries = Array.from(params.entries());
+  const withoutSignature = allEntries.filter(([key]) => key !== 'signature');
 
   const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
-  const computedHash = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
-
-  const expected = Buffer.from(computedHash, 'hex');
   const received = Buffer.from(hash, 'hex');
-  if (expected.length !== received.length || !crypto.timingSafeEqual(expected, received)) {
-    return null;
-  }
+
+  // Telegram mijoz versiyasiga qarab "signature" maydonini hash hisobiga
+  // qo'shishi ham, qo'shmasligi ham mumkin — ikkala variant ham sinaladi.
+  const verified = [withoutSignature, allEntries].some((entries) => {
+    const computed = crypto.createHmac('sha256', secretKey).update(buildCheckString(entries)).digest('hex');
+    const expected = Buffer.from(computed, 'hex');
+    return expected.length === received.length && crypto.timingSafeEqual(expected, received);
+  });
+
+  if (!verified) return null;
 
   const authDate = Number(params.get('auth_date'));
   if (!authDate || Date.now() / 1000 - authDate > maxAgeSeconds) {

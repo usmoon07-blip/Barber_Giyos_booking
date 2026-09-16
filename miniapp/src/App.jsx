@@ -8,7 +8,7 @@ import Home from './pages/Home';
 import Onboarding from './pages/Onboarding';
 import Profile from './pages/Profile';
 import Services from './pages/Services';
-import { setBackButton } from './telegram';
+import { getDiagnostics, setBackButton } from './telegram';
 
 export default function App() {
   const { loading, error, reload, onboarded } = useApp();
@@ -28,7 +28,28 @@ export default function App() {
   if (loading) return <Loader full />;
 
   if (error) {
-    return <ErrorState onRetry={reload} message={error.message} />;
+    // VAQTINCHALIK tashxis bloki — nosozlik topilgach o'chiriladi.
+    return (
+      <>
+        <ErrorState onRetry={reload} message={error.message} />
+        <pre
+          style={{
+            margin: '0 16px 24px',
+            padding: 12,
+            background: '#f4f4f5',
+            borderRadius: 8,
+            fontSize: 12,
+            lineHeight: 1.6,
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-all',
+          }}
+        >
+          {Object.entries(getDiagnostics())
+            .map(([key, value]) => `${key}: ${value}`)
+            .join('\n')}
+        </pre>
+      </>
+    );
   }
 
   if (!onboarded) return <Onboarding />;

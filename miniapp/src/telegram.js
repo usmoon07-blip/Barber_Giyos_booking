@@ -27,6 +27,30 @@ export function getInitData() {
   return webApp?.initData || '';
 }
 
+/**
+ * VAQTINCHALIK — nosozlikni topish uchun. Muammo hal bo'lgach o'chiriladi.
+ * Faqat maydon nomlarini ko'rsatadi, qiymatlarini emas (imzo sir qoladi).
+ */
+export function getDiagnostics() {
+  const initData = webApp?.initData || '';
+
+  let fields = '—';
+  try {
+    if (initData) fields = Array.from(new URLSearchParams(initData).keys()).join(', ');
+  } catch (_error) {
+    fields = '?';
+  }
+
+  return {
+    'window.Telegram': typeof window !== 'undefined' && window.Telegram ? 'bor' : "YO'Q",
+    WebApp: webApp ? 'bor' : "YO'Q",
+    versiya: webApp?.version || '—',
+    platforma: webApp?.platform || '—',
+    'initData uzunligi': String(initData.length),
+    maydonlar: fields,
+  };
+}
+
 /** Telegram foydalanuvchisi (faqat ko'rsatish uchun). */
 export function getTelegramUser() {
   return webApp?.initDataUnsafe?.user || null;
