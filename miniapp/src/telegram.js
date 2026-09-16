@@ -5,6 +5,10 @@
 
 const webApp = typeof window !== 'undefined' ? window.Telegram?.WebApp : null;
 
+// Telegram ishga tushirish ma'lumotlarini manzil "#" qismida uzatadi.
+// HashRouter uni almashtirib yuborishidan oldin saqlab qolamiz.
+const launchUrl = typeof window !== 'undefined' ? window.location.href : '';
+
 export const isTelegram = Boolean(webApp?.initData);
 
 /** Ilova ochilganda bir marta chaqiriladi. */
@@ -41,6 +45,15 @@ export function getDiagnostics() {
     fields = '?';
   }
 
+  let launchKeys = '—';
+  try {
+    const hashPart = launchUrl.split('#')[1] || '';
+    const keys = Array.from(new URLSearchParams(hashPart).keys());
+    launchKeys = keys.length ? keys.join(', ') : "bo'sh";
+  } catch (_error) {
+    launchKeys = '?';
+  }
+
   return {
     'window.Telegram': typeof window !== 'undefined' && window.Telegram ? 'bor' : "YO'Q",
     WebApp: webApp ? 'bor' : "YO'Q",
@@ -48,6 +61,8 @@ export function getDiagnostics() {
     platforma: webApp?.platform || '—',
     'initData uzunligi': String(initData.length),
     maydonlar: fields,
+    'ochilish parametrlari': launchKeys,
+    'manzil boshi': launchUrl.split('#')[0] || '—',
   };
 }
 
