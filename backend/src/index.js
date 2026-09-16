@@ -7,7 +7,7 @@ const cors = require('cors');
 
 const { config, validateConfig } = require('./config/default');
 const { connectDatabase, disconnectDatabase } = require('./database/connection');
-const { startBot, stopBot } = require('./core/bot');
+const { startBot, stopBot, mountWebhookRoute } = require('./core/bot');
 const { startReminderJob } = require('./jobs/reminder.job');
 const { startAutoCompleteJob } = require('./jobs/autocomplete.job');
 const { notFoundHandler, errorHandler } = require('./middlewares/error.middleware');
@@ -50,6 +50,9 @@ function createApp() {
   app.use('/api/bot', botRoutes);
   app.use('/api/client', clientRoutes);
   app.use('/api/admin', adminRoutes);
+
+  // Telegram webhook (faqat WEBHOOK_URL sozlangan — bulutga joylashtirilganda)
+  mountWebhookRoute(app);
 
   // Admin panel build (agar yig'ilgan bo'lsa) — /admin manzilida
   if (fs.existsSync(ADMIN_DIST)) {
@@ -95,10 +98,12 @@ async function bootstrap() {
 
   const app = createApp();
 
+  const publicUrl = config.bot.webhookUrl || `http://localhost:${config.port}`;
+
   const server = app.listen(config.port, () => {
-    console.log(`🚀 Server: http://localhost:${config.port}`);
-    console.log(`   Mini App:     http://localhost:${config.port}/`);
-    console.log(`   Admin API:    http://localhost:${config.port}/api/admin`);
+    console.log(`🚀 Server: ${publicUrl}`);
+    console.log(`   Mini App:     ${publicUrl}/`);
+    console.log(`   Admin panel:  ${publicUrl}/admin`);
     console.log(`   Vaqt mintaqasi: ${config.timezone}`);
   });
 
@@ -117,6 +122,15 @@ async function bootstrap() {
   process.once('SIGINT', () => shutdown('SIGINT'));
   process.once('SIGTERM', () => shutdown('SIGTERM'));
 }
+
+// Kutilmagan xatolik (masalan, Telegram bilan vaqtinchalik ulanish uzilishi)
+// butun serverni yiqitib qo'ymasin — faqat log qoldiradi.
+process.on('unhandledRejection', (error) => {
+  console.error('[kutilmagan xatolik]', error?.message || error);
+});
+process.on('uncaughtException', (error) => {
+  console.error('[jiddiy xatolik]', error?.message || error);
+});
 
 bootstrap().catch((error) => {
   console.error('❌ Ishga tushmadi:', error.message);

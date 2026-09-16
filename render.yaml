@@ -1,0 +1,41 @@
+# Render.com uchun tayyor sozlama (Blueprint).
+# dashboard.render.com -> New -> Blueprint -> shu repozitoriyni tanlang.
+#
+# Barcha environment o'zgaruvchilari sync:false bilan belgilangan —
+# Render ularni birinchi joylashtirishda sizdan so'raydi, qiymatlar
+# hech qachon shu faylga yozilmaydi.
+
+services:
+  - type: web
+    name: giyos-barbershop
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: frankfurt
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: BOT_TOKEN
+        sync: false
+      - key: ADMIN_TELEGRAM_IDS
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: TIMEZONE
+        value: Asia/Tashkent
+      - key: NODE_ENV
+        value: production
+      # Render manzilni beradi ("https://giyos-barbershop.onrender.com" kabi).
+      # Birinchi joylashtirishdan keyin shu ikkalasiga o'sha manzilni yozib,
+      # qayta joylashtiring (Manual Deploy -> Deploy latest commit).
+      - key: WEBHOOK_URL
+        sync: false
+      - key: MINIAPP_URL
+        sync: false

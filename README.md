@@ -241,14 +241,11 @@ Odatda ngrok havolasi har safar o'zgaradi. Buni bir marta hal qilish mumkin:
 2. Chap menyudan **Domains** → **+ New Domain** tugmasini bosing
 3. Bepul rejada **bitta doimiy domen** beriladi, masalan:
    `giyos-barbershop.ngrok-free.app`
-4. `windows\4-NGROK.bat` faylini **Notepad**'da oching
-5. Quyidagi qatorni toping, boshidagi `REM` ni o'chiring va o'z domeningizni yozing:
+4. `windows\ngrok-domen.txt` faylini **Notepad**'da oching
+5. `#` bilan boshlanmagan qatorga domeningizni yozing (masalan
+   `giyos-barbershop.ngrok-free.app`) va saqlang
 
-```bat
-set NGROK_DOMAIN=giyos-barbershop.ngrok-free.app
-```
-
-6. Saqlang. Endi `4-NGROK.bat` har safar **bir xil havolani** beradi.
+6. Endi `NGROK.bat` har safar **bir xil havolani** beradi.
 7. `.env` dagi `MINIAPP_URL` va BotFather'dagi Menu Button'ni **bir marta**
    shu havolaga sozlang — boshqa tegmaysiz.
 
@@ -259,6 +256,80 @@ set NGROK_DOMAIN=giyos-barbershop.ngrok-free.app
 > ⚠️ Doimiy domen sozlanmagan bo'lsa, ngrok havolasi **har safar o'zgaradi**.
 > Shunda `.env` dagi `MINIAPP_URL` ni yangilab, serverni qayta ishga tushiring
 > va BotFather'dagi havolani ham yangilang.
+
+---
+
+## ☁️ 3.5. Bulutga joylashtirish — kompyuter o'chsa ham ishlashi uchun
+
+Yuqoridagi hammasi **kompyuteringiz yoniq va internetga ulangan** paytdagina
+ishlaydi. Botni doim ishlaydigan qilish uchun uni bulut serveriga
+(masalan [Render](https://render.com)) ko'chirish kerak — bir marta
+sozlansa, keyin kompyuteringiz o'chsa ham bot, Mini App va Admin Panel
+ishlayveradi.
+
+Bu ixtiyoriy qadam — localhost'da hammasi ishlab tursa, shart emas.
+
+### Nima o'zgaradi
+
+Loyihada allaqachon tayyor: `Dockerfile` va `render.yaml`. Bot ikki rejimda
+ishlay oladi:
+
+- **Polling** (hozirgi, localhost) — bot Telegram'ga o'zi murojaat qilib
+  turadi, shuning uchun kompyuter yonib turishi shart
+- **Webhook** (bulutda) — Telegram xabarni serverga **o'zi** yuboradi,
+  server esa doim tinglab turadi. `WEBHOOK_URL` sozlansa, kod avtomatik
+  shu rejimga o'tadi — boshqa hech narsa o'zgartirish shart emas
+
+### Qadamlar (Render, bepul reja)
+
+1. [render.com](https://render.com) ga kiring, GitHub hisobingiz bilan
+   ro'yxatdan o'ting
+2. **New** → **Blueprint** → repozitoriyni tanlang
+   (`usmoon07-blip/Barber_Giyos_booking`, `claude/salom-0u45my` branch)
+3. Render `render.yaml` faylini o'zi topib, so'raladigan sozlamalarni
+   ko'rsatadi. Har biriga quyidagilarni kiriting:
+
+   | Sozlama | Qiymat |
+   |---|---|
+   | `DATABASE_URL` | Neon'dagi baza manzili (pooler bilan) |
+   | `DIRECT_URL` | O'sha manzil, pooler'siz |
+   | `BOT_TOKEN` | @BotFather bergan token |
+   | `ADMIN_TELEGRAM_IDS` | Telegram ID raqamingiz |
+   | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Admin panel kirish ma'lumotlari |
+   | `WEBHOOK_URL` / `MINIAPP_URL` | Hozircha bo'sh qoldiring — 5-qadamda to'ldiramiz |
+
+4. **Apply** tugmasini bosing. Render Docker image'ni yig'ib, joylashtiradi
+   (5–10 daqiqa). Tugagach sizga manzil beriladi, masalan:
+   `https://giyos-barbershop.onrender.com`
+
+5. **Dashboard → Environment** bo'limiga qaytib, `WEBHOOK_URL` va
+   `MINIAPP_URL` ikkalasiga ham shu manzilni yozing (oxirida `/` **bo'lmasin**),
+   so'ng **Manual Deploy → Deploy latest commit**
+
+6. Telegram'da **@BotFather** → `/mybots` → botingiz → **Bot Settings** →
+   **Menu Button** → **Configure menu button** → shu manzilni yuboring →
+   tugma nomi: `Bron qilish`
+
+7. Botga `/start` yozing — endi kompyuteringiz o'chiq bo'lsa ham javob beradi
+
+Admin panel: `https://giyos-barbershop.onrender.com/admin`
+
+### Bepul rejaning bitta cheklovi
+
+Render'ning bepul rejasi 15 daqiqa faoliyatsizlikdan keyin serverni
+"uxlatib qo'yadi". Mijoz xabar yozganda server bir necha soniyada
+uyg'onadi va javob beradi — birinchi xabar biroz **kechikishi** mumkin
+(odatda 10–30 soniya), keyingilari darhol keladi.
+
+Bu kechikish muammo bo'lsa, Render dashboard'da **Settings → Instance
+Type** dan **Starter** rejasiga o'tkazing (~$7/oy) — server hech qachon
+uxlamaydi, javob doim darhol keladi.
+
+### Narxni o'zgartirsam, qayta ishga tushirishda o'chib qolmaydimi?
+
+Yo'q. Seed skripti faqat **yetishmayotgan** barber/xizmatni qo'shadi,
+mavjudlarini hech qachon qayta yozmaydi — admin panelda qilgan
+o'zgarishlaringiz har doim saqlanadi.
 
 ---
 

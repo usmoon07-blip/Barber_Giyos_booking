@@ -1,6 +1,7 @@
 'use strict';
 
 const path = require('path');
+const crypto = require('crypto');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 /**
@@ -28,6 +29,10 @@ const config = {
     token: process.env.BOT_TOKEN,
     adminIds: parseList(process.env.ADMIN_TELEGRAM_IDS),
     miniAppUrl: (process.env.MINIAPP_URL || '').trim().replace(/\/+$/, ''),
+    // Bulutga joylashtirilganda (Render, Railway va h.k.) o'rnatiladi.
+    // Bo'sh bo'lsa bot localhostdagidek polling rejimida ishlayveradi.
+    webhookUrl: (process.env.WEBHOOK_URL || '').trim().replace(/\/+$/, ''),
+    webhookPath: '',
   },
 
   admin: {
@@ -48,6 +53,13 @@ const config = {
     telegramId: process.env.DEV_TELEGRAM_ID || '999000111',
   },
 };
+
+// Webhook manzili taxmin qilib bo'lmaydigan, lekin bot tokenidan
+// deterministik hosil qilinadi — alohida maxfiy sozlama kerak emas.
+if (config.bot.token) {
+  const hash = crypto.createHash('sha256').update(config.bot.token).digest('hex').slice(0, 32);
+  config.bot.webhookPath = `/api/bot/webhook/${hash}`;
+}
 
 /** Ishga tushishdan oldin majburiy sozlamalarni tekshiradi. */
 function validateConfig() {

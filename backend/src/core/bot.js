@@ -44,7 +44,17 @@ function createBot() {
   return bot;
 }
 
-/** Botni polling rejimida ishga tushiradi. */
+/**
+ * Botni ishga tushiradi.
+ *
+ * WEBHOOK_URL sozlangan bo'lsa — webhook rejimi (bulutga joylashtirilganda
+ * kerak: Telegram xabarni o'zi yuboradi, uzluksiz ulanish shart emas).
+ * Aks holda — polling rejimi (localhost uchun standart).
+ *
+ * Webhook rejimida Express marshruti `index.js` da `createApp()` ichida,
+ * `mountWebhookRoute()` orqali oldindan ulanган bo'lishi kerak — shu
+ * funksiya faqat Telegram tomonini (setWebhook / launch) sozlaydi.
+ */
 async function startBot() {
   const instance = createBot();
 
@@ -70,14 +80,27 @@ async function startBot() {
       .catch((error) => console.warn('[bot] menyu tugmasi o\'rnatilmadi:', error.message));
   }
 
+  const useWebhook = config.bot.webhookUrl.startsWith('https://');
+
   try {
     const me = await instance.telegram.getMe();
 
-    instance
-      .launch({ dropPendingUpdates: true })
-      .catch((error) => console.error('[bot] ishga tushmadi:', error.message));
+    if (useWebhook) {
+      const fullUrl = `${config.bot.webhookUrl}${config.bot.webhookPath}`;
+      await instance.telegram.setWebhook(fullUrl, { drop_pending_updates: true });
 
-    console.log(`🤖 Bot ishga tushdi: @${me.username}`);
+      console.log(`🤖 Bot ishga tushdi (webhook): @${me.username}`);
+    } else {
+      // Avvalgi webhook o'rnatilgan bo'lishi mumkin (masalan localhostga
+      // qaytilganda) — polling bilan ziddiyat bo'lmasligi uchun o'chiramiz.
+      await instance.telegram.deleteWebhook({ drop_pending_updates: false }).catch(() => {});
+
+      instance
+        .launch({ dropPendingUpdates: true })
+        .catch((error) => console.error('[bot] ishga tushmadi:', error.message));
+
+      console.log(`🤖 Bot ishga tushdi (polling): @${me.username}`);
+    }
   } catch (error) {
     console.error('⚠️  Bot ishga tushmadi:', error.message);
     console.error('    .env faylidagi BOT_TOKEN ni tekshiring. Server baribir ishlayapti.');
@@ -87,7 +110,7 @@ async function startBot() {
 }
 
 async function stopBot(signal = 'SIGTERM') {
-  if (bot) {
+  if (bot && !config.bot.webhookUrl) {
     bot.stop(signal);
   }
 }
@@ -96,4 +119,17 @@ function getBot() {
   return bot;
 }
 
-module.exports = { createBot, startBot, stopBot, getBot };
+/**
+ * Webhook marshrutini Express ilovasiga ulaydi.
+ * `createApp()` ichida, notFoundHandler'dan OLDIN chaqirilishi shart —
+ * aks holda so'rov webhook'ga yetib bormay, 404 bilan tugaydi.
+ * WEBHOOK_URL sozlanmagan bo'lsa hech narsa qilmaydi (localhost holati).
+ */
+function mountWebhookRoute(app) {
+  if (!config.bot.webhookUrl.startsWith('https://')) return;
+
+  const instance = createBot();
+  app.use(instance.webhookCallback(config.bot.webhookPath));
+}
+
+module.exports = { createBot, startBot, stopBot, getBot, mountWebhookRoute };
