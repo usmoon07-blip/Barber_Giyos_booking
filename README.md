@@ -353,11 +353,57 @@ Bu kechikish muammo bo'lsa, Render dashboard'da **Settings → Instance
 Type** dan **Starter** rejasiga o'tkazing (~$7/oy) — server hech qachon
 uxlamaydi, javob doim darhol keladi.
 
-Yoki **bepul** yechim: frontend'ni Vercel'ga ajrating — keyingi bo'lim.
+Yoki **bepul** yechim: Mini App'ni statik hostingga ajrating. Ikki yo'l bor —
+**GitHub Pages** (3.6, allaqachon sozlangan, hech narsa qilish kerak emas) yoki
+**Vercel** (3.7, qo'lda sozlanadi).
 
 ---
 
-## ⚡ 3.6. Frontend'ni Vercel'ga ajratish (bepul, tavsiya etiladi)
+## ⚡ 3.6. Mini App — GitHub Pages (avtomatik, allaqachon ishlayapti)
+
+Loyihada `.github/workflows/deploy-miniapp.yml` tayyor turibdi. `miniapp/`
+papkasidagi har bir o'zgarishdan keyin GitHub Mini App'ni o'zi yig'ib,
+shu manzilga joylaydi:
+
+```
+https://usmoon07-blip.github.io/Barber_Giyos_booking/
+```
+
+GitHub Pages statik CDN — **hech qachon uxlamaydi**, shuning uchun Telegram
+oynasi darhol ochiladi. Backend (bot, API, admin panel) Render'da qolaveradi.
+
+### Sozlash (bir marta)
+
+**0-qadam — GitHub Pages'ni yoqish.** Buni faqat repozitoriya egasi qila
+oladi (workflow tokeni bunga haqli emas):
+[Settings → Pages](https://github.com/usmoon07-blip/Barber_Giyos_booking/settings/pages)
+→ **Build and deployment** → **Source** → **GitHub Actions** ni tanlang.
+Keyin **Actions** bo'limidan workflow'ni bir marta qayta ishga tushiring.
+
+| Qayerda | Nima |
+|---|---|
+| **Render → Environment** | `MINIAPP_URL` = `https://usmoon07-blip.github.io/Barber_Giyos_booking/` |
+| **Render → Environment** | `WEBHOOK_URL` = **o'zgarmaydi**, Render manzili |
+| **@BotFather → Menu Button** | `https://usmoon07-blip.github.io/Barber_Giyos_booking/` |
+
+> `MINIAPP_URL` va `WEBHOOK_URL` endi **bir xil emas**. Birinchisi — tugma
+> nimani ochishi, ikkinchisi — Telegram xabarlarni qayerga yuborishi.
+
+### Backend manzili o'zgarsa
+
+Mini App backendni qayerdan qidirishini bilishi kerak. Standart qiymat
+`https://giyos-barbershop.onrender.com`. Agar Render manzilingiz boshqacha
+bo'lsa, GitHub'da: **Settings → Secrets and variables → Actions → Variables**
+→ **New repository variable** → nomi `API_BASE_URL`, qiymati o'z Render
+manzilingiz. Keyin **Actions** bo'limidan workflow'ni qayta ishga tushiring
+(`Run workflow`). Kodga tegish shart emas.
+
+---
+
+## 🔺 3.7. Mini App — Vercel (muqobil yo'l)
+
+GitHub Pages (3.6) o'rniga Vercel ishlatmoqchi bo'lsangiz — shu bo'lim.
+Ikkalasi bir vaqtda kerak emas, bittasini tanlang.
 
 ### Nima muammoni hal qiladi
 
