@@ -331,6 +331,9 @@ ishlay oladi:
    `MINIAPP_URL` ikkalasiga ham shu manzilni yozing (oxirida `/` **bo'lmasin**),
    so'ng **Manual Deploy → Deploy latest commit**
 
+   > Mini App'ni Vercel'ga ajratsangiz (3.6-bo'lim), `MINIAPP_URL` o'rniga
+   > Vercel manzili yoziladi — `WEBHOOK_URL` esa Render manzili bo'lib qoladi.
+
 6. Telegram'da **@BotFather** → `/mybots` → botingiz → **Bot Settings** →
    **Menu Button** → **Configure menu button** → shu manzilni yuboring →
    tugma nomi: `Bron qilish`
@@ -349,6 +352,80 @@ uyg'onadi va javob beradi — birinchi xabar biroz **kechikishi** mumkin
 Bu kechikish muammo bo'lsa, Render dashboard'da **Settings → Instance
 Type** dan **Starter** rejasiga o'tkazing (~$7/oy) — server hech qachon
 uxlamaydi, javob doim darhol keladi.
+
+Yoki **bepul** yechim: frontend'ni Vercel'ga ajrating — keyingi bo'lim.
+
+---
+
+## ⚡ 3.6. Frontend'ni Vercel'ga ajratish (bepul, tavsiya etiladi)
+
+### Nima muammoni hal qiladi
+
+Render bepul rejada uxlab qolganda, Telegram Mini App'ni ochsangiz
+server uyg'onguncha ~50 soniya ketadi. Telegram esa buncha kutmaydi —
+foydalanuvchi **oq (bo'sh) ekran** ko'radi va oyna yopiladi. Bot o'zi
+ishlayveradi (webhook so'rovi serverni uyg'otishga ulguradi), shuning
+uchun tashqaridan "bot ishlayapti, lekin Bron qilish ishlamayapti"
+bo'lib ko'rinadi.
+
+Vercel — statik fayllar uchun CDN, u **hech qachon uxlamaydi**. Mini App
+u yerdan darhol ochiladi.
+
+### Qaysi qism qayerda ishlaydi
+
+| Qism | Qayerda | Manzil namunasi |
+|---|---|---|
+| Mini App (frontend) | **Vercel** | `https://giyos-barbershop.vercel.app` |
+| Bot + API + Admin Panel | **Render** | `https://giyos-barbershop.onrender.com` |
+
+### Qadamlar
+
+1. [vercel.com](https://vercel.com) ga GitHub hisobingiz bilan kiring
+2. **Add New** → **Project** → shu repozitoriyni tanlang (**Import**)
+3. **Root Directory** ni `miniapp` qilib belgilang — bu eng muhim qadam.
+   ("Edit" tugmasini bosib, ro'yxatdan `miniapp` papkasini tanlaysiz.)
+   Framework sifatida Vercel **Vite** ni o'zi topadi.
+4. **Environment Variables** bo'limiga bittasini qo'shing:
+
+   | Name | Value |
+   |---|---|
+   | `VITE_API_URL` | Render manzilingiz, masalan `https://giyos-barbershop.onrender.com` |
+
+   Oxirida `/` **bo'lmasin**.
+5. **Deploy** — 1-2 daqiqada tayyor bo'ladi va sizga Vercel manzilini
+   beradi (`https://...vercel.app`)
+6. **Render → Environment** bo'limiga qaytib, faqat bittasini o'zgartiring:
+
+   | Sozlama | Endi qanday bo'lishi kerak |
+   |---|---|
+   | `MINIAPP_URL` | **Vercel** manzili (`https://...vercel.app`) |
+   | `WEBHOOK_URL` | **O'zgarmaydi** — Render manzili (`https://...onrender.com`) |
+
+   > Bu ikkitasi endi **bir xil emas**. `MINIAPP_URL` — botdagi tugma
+   > nimani ochishini belgilaydi, `WEBHOOK_URL` — Telegram xabarlarni
+   > qayerga yuborishini. Ularni almashtirib yuborish — eng ko'p
+   > uchraydigan xato.
+
+   **Save Changes** bosing, Render o'zi qayta ishga tushadi.
+7. **@BotFather** → `/mybots` → botingiz → **Bot Settings** →
+   **Menu Button** → **Configure menu button** → **Vercel** manzilini
+   yuboring → tugma nomi: `Bron qilish`
+8. Telegram'da botni yopib qayta oching, `/start` yozing va
+   **Bron qilish** tugmasini bosing
+
+### CORS haqida o'ylash shart emas
+
+Backend `*.vercel.app` manzillarini avtomatik qabul qiladi
+(`backend/src/index.js`), shuning uchun `CORS_ORIGINS` ni qo'lda
+o'zgartirish kerak emas. Xavfsizlik `X-Telegram-Init-Data` imzosi bilan
+ta'minlanadi — har bir so'rov bot tokeni orqali tekshiriladi.
+
+### Nimalar baribir Render'da qoladi
+
+Admin panel (`https://...onrender.com/admin`) va API Render'da qoladi.
+Admin panelni birinchi ochganda server uxlab yotgan bo'lsa, ~50 soniya
+kutishingiz mumkin — bu normal, chunki unga kunda bir necha marta
+kiriladi. Mijozlar ko'radigan Mini App esa endi doim darhol ochiladi.
 
 ### Narxni o'zgartirsam, qayta ishga tushirishda o'chib qolmaydimi?
 
