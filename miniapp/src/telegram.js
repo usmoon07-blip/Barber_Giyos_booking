@@ -47,43 +47,6 @@ export function getInitData() {
   return webApp?.initData || initDataFromUrl();
 }
 
-/**
- * VAQTINCHALIK — nosozlikni topish uchun. Muammo hal bo'lgach o'chiriladi.
- * Faqat maydon nomlarini ko'rsatadi, qiymatlarini emas (imzo sir qoladi).
- */
-export function getDiagnostics() {
-  const initData = webApp?.initData || '';
-  const effective = getInitData();
-
-  let fields = '—';
-  try {
-    if (effective) fields = Array.from(new URLSearchParams(effective).keys()).join(', ');
-  } catch (_error) {
-    fields = '?';
-  }
-
-  let launchKeys = '—';
-  try {
-    const hashPart = launchUrl.split('#')[1] || '';
-    const keys = Array.from(new URLSearchParams(hashPart).keys());
-    launchKeys = keys.length ? keys.join(', ') : "bo'sh";
-  } catch (_error) {
-    launchKeys = '?';
-  }
-
-  return {
-    'window.Telegram': typeof window !== 'undefined' && window.Telegram ? 'bor' : "YO'Q",
-    WebApp: webApp ? 'bor' : "YO'Q",
-    versiya: webApp?.version || '—',
-    platforma: webApp?.platform || '—',
-    'initData uzunligi': String(initData.length),
-    'manzildan olingani': String(initDataFromUrl().length),
-    maydonlar: fields,
-    'ochilish parametrlari': launchKeys,
-    'manzil boshi': launchUrl.split('#')[0] || '—',
-  };
-}
-
 /** Telegram foydalanuvchisi (faqat ko'rsatish uchun). */
 export function getTelegramUser() {
   return webApp?.initDataUnsafe?.user || null;
