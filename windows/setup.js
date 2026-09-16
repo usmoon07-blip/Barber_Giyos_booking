@@ -124,8 +124,10 @@ async function main() {
   console.log('  ✅ qabul qilindi\n');
 
   line();
-  console.log('  2/3  TELEGRAM BOT TOKENI');
-  console.log('       Telegram → @BotFather → /mybots → API Token');
+  console.log('  2/3  BOT TOKENI');
+  console.log();
+  console.log('       "8875472150:AAG..." ko\u2019rinishidagi matn.');
+  console.log('       Chatdan nusxalab, o\u2019ng tugma bilan qo\u2019ying.');
   line();
   const { token } = await askUntilValid('\n  Bot tokeni: ', validateToken);
   console.log('  ✅ qabul qilindi\n');
@@ -141,6 +143,8 @@ async function main() {
   line();
   console.log('  ADMIN PANEL (bo’sh qoldirsangiz standart qiymat qo’yiladi)');
   line();
+  console.log();
+  console.log('  (shunchaki ENTER bosing — tayyor qiymat qo\u2019yiladi)');
   const username = (await ask('\n  Login  [giyos]: ')) || 'giyos';
   const password = (await ask('  Parol  [Giyos2026!]: ')) || 'Giyos2026!';
 
