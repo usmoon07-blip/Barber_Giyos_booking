@@ -26,9 +26,23 @@ export function initTelegram() {
   }
 }
 
+/**
+ * Telegram ishga tushirish ma'lumotini manzilning "#" qismida ham uzatadi.
+ * HashRouter o'sha qismni almashtirib yuborgani uchun uni boshida saqlab
+ * qolgan nusxadan o'qiymiz — SDK ba'zan bo'sh qaytaradi.
+ */
+function initDataFromUrl() {
+  try {
+    const hashPart = launchUrl.split('#')[1] || '';
+    return new URLSearchParams(hashPart).get('tgWebAppData') || '';
+  } catch (_error) {
+    return '';
+  }
+}
+
 /** Telegram tomonidan imzolangan ma'lumot (server tekshiradi). */
 export function getInitData() {
-  return webApp?.initData || '';
+  return webApp?.initData || initDataFromUrl();
 }
 
 /**
@@ -37,10 +51,11 @@ export function getInitData() {
  */
 export function getDiagnostics() {
   const initData = webApp?.initData || '';
+  const effective = getInitData();
 
   let fields = '—';
   try {
-    if (initData) fields = Array.from(new URLSearchParams(initData).keys()).join(', ');
+    if (effective) fields = Array.from(new URLSearchParams(effective).keys()).join(', ');
   } catch (_error) {
     fields = '?';
   }
@@ -60,6 +75,7 @@ export function getDiagnostics() {
     versiya: webApp?.version || '—',
     platforma: webApp?.platform || '—',
     'initData uzunligi': String(initData.length),
+    'manzildan olingani': String(initDataFromUrl().length),
     maydonlar: fields,
     'ochilish parametrlari': launchKeys,
     'manzil boshi': launchUrl.split('#')[0] || '—',
