@@ -89,13 +89,16 @@ Line '='
 Write-Host '    TUNNEL OCHILMOQDA'
 Line '='
 Write-Host ''
-Write-Host '   Hozir YANGI oyna ochiladi. U yerda quti ichida'
-Write-Host '   shunga oxshash havola korinadi:'
+Write-Host '   Hozir YANGI qora oyna ochiladi.'
 Write-Host ''
-Write-Host '     https://random-sozlar-1234.trycloudflare.com' -ForegroundColor Green
+Write-Host '   U yerda "trycloudflare.com" bilan tugaydigan bitta' -ForegroundColor Yellow
+Write-Host '   qator chiqadi — u SIZ UCHUN maxsus, har safar boshqacha' -ForegroundColor Yellow
+Write-Host '   va tasodifiy so`zlardan iborat bo`ladi.' -ForegroundColor Yellow
 Write-Host ''
-Write-Host '   10-15 soniya kuting, keyin O SHA HAVOLANI nusxalang'
-Write-Host '   (nusxalash: sichqoncha bilan belgilab, ong tugma).'
+Write-Host '   Quyida hech qanday tayyor havola YO`Q — chunki uni'
+Write-Host '   oldindan bilib bo`lmaydi. Faqat o`sha yangi oynada,'
+Write-Host '   10-15 soniyadan keyin paydo bo`ladigan qatorni topib,'
+Write-Host '   nusxalaysiz (sichqoncha bilan belgilab, o`ng tugma).'
 Write-Host ''
 Line '='
 Write-Host ''
@@ -108,25 +111,48 @@ Warn '   Ochilgan oynani YOPMANG — u ishlab turishi kerak.'
 Write-Host ''
 
 # ─────────────────────────────────────────────────────────
-#  3. Havolani so'raymiz va .env ga o'zimiz yozamiz
+#  3. Havolani so'raymiz, TEKSHIRAMIZ, so'ng .env ga yozamiz
 # ─────────────────────────────────────────────────────────
-Write-Host '   Ochilgan oynadan https://....trycloudflare.com'
-Write-Host '   havolasini nusxalab, shu yerga ONG TUGMA bilan qoying:'
+Write-Host '   Ochilgan YANGI oynadan havolani nusxalab, shu yerga'
+Write-Host '   ONG TUGMA bilan qoying:'
 Write-Host ''
 
-$mini = ''
-while ($mini -notmatch '^https://[\w.-]+\.trycloudflare\.com/?$') {
-    $mini = (Read-Host '   Havola').Trim()
+$mini = $null
 
-    if ($mini -notmatch '^https://[\w.-]+\.trycloudflare\.com/?$') {
+while (-not $mini) {
+    $candidate = (Read-Host '   Havola').Trim().TrimEnd('/')
+
+    if ($candidate -notmatch '^https://[\w.-]+\.trycloudflare\.com$') {
         Write-Host ''
         Warn '   Bu https://...trycloudflare.com korinishida emas.'
         Write-Host '   Ochilgan oynadagi yozuvni diqqat bilan qayta nusxalang.'
         Write-Host ''
+        continue
+    }
+
+    Write-Host ''
+    Info 'Havola tekshirilmoqda...'
+
+    try {
+        $check = Invoke-WebRequest -Uri "$candidate/api/health" -TimeoutSec 10 -UseBasicParsing
+        if ($check.StatusCode -eq 200) {
+            Ok 'Havola ishlayapti'
+            $mini = $candidate
+        }
+        else {
+            Warn "   Server kutilmagan javob berdi (kod $($check.StatusCode))."
+        }
+    }
+    catch {
+        Write-Host ''
+        Warn '   Bu havola ISHLAMAYAPTI.'
+        Write-Host '   Sabab: yangi oynadagi haqiqiy qatordan boshqa narsa'
+        Write-Host '   nusxalangan, yoki hali 10-15 soniya to`lmagan.'
+        Write-Host ''
+        Write-Host '   Yangi oynani tekshiring va qaytadan urinib koring.'
+        Write-Host ''
     }
 }
-
-$mini = $mini.TrimEnd('/')
 
 $envFile = Join-Path $Root 'backend\.env'
 
