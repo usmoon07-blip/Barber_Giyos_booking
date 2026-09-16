@@ -26,3 +26,6 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Ngrok maxfiy kaliti (hech qachon yuklanmasin)
+windows/ngrok-token.txt

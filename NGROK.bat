@@ -47,7 +47,22 @@ if errorlevel 1 (
   )
 )
 
-REM ── authtoken sozlanganmi? ───────────────────────────────
+REM ── authtoken fayldan o'qiladimi? ────────────────────────
+if not exist "%USERPROFILE%\AppData\Local\ngrok\ngrok.yml" (
+  if exist "windows\ngrok-token.txt" (
+    for /f "usebackq delims=" %%t in ("windows\ngrok-token.txt") do (
+      set "LINE=%%t"
+      if not "!LINE!"=="" if not "!LINE:~0,1!"=="#" set "FILE_TOKEN=!LINE!"
+    )
+    if defined FILE_TOKEN (
+      echo   Token fayldan o'qildi, sozlanmoqda...
+      "%NGROK%" config add-authtoken !FILE_TOKEN!
+      if not errorlevel 1 echo   ✅ Hisob sozlandi
+    )
+  )
+)
+
+REM ── hali ham sozlanmagan bo'lsa, so'raymiz ───────────────
 if not exist "%USERPROFILE%\AppData\Local\ngrok\ngrok.yml" (
   cls
   echo.
@@ -56,9 +71,12 @@ if not exist "%USERPROFILE%\AppData\Local\ngrok\ngrok.yml" (
   echo  ════════════════════════════════════════════════════════
   echo.
   echo   1. https://ngrok.com/signup - Google bilan kiring
-  echo   2. Chapdagi "Your Authtoken" bo'limini oching
+  echo   2. dashboard.ngrok.com/get-started/your-authtoken
   echo   3. Tokenni nusxalab, shu yerga joylashtiring
   echo      ^(sichqonchaning o'ng tugmasi = joylashtirish^)
+  echo.
+  echo   Yoki: tokenni windows\ngrok-token.txt fayliga
+  echo   yozib qo'ysangiz, bu savol boshqa chiqmaydi.
   echo.
   set /p NGROK_TOKEN="   Authtoken: "
   if "!NGROK_TOKEN!"=="" (

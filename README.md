@@ -57,6 +57,20 @@ Tugagach brauzerda admin panel o'zi ochiladi, Telegramda esa botga `/start` yozs
 > ruxsat so'rasa «Ha» deng. Agar o'rnatolmasa, [nodejs.org](https://nodejs.org)
 > dan LTS versiyasini o'rnatib, kompyuterni qayta yoqing.
 
+#### Savollarga javob yozish noqulay bo'lsa
+
+`backend\.env` nomli faylni **Notepad**'da o'zingiz yaratib, ichiga
+tayyor matnni qo'ysangiz ham bo'ladi — u holda `BOSHLASH.bat` savol
+bermaydi, to'g'ridan-to'g'ri o'rnatishga o'tadi. Namuna:
+`backend\.env.example` faylida.
+
+#### Ngrok tokeni
+
+`NGROK.bat` bir marta ngrok tokenini so'raydi. Uni ham terminalga
+yozmasdan, `windows\ngrok-token.txt` fayliga yozib qo'yish mumkin
+(namuna: `windows\ngrok-token.txt.namuna`). Bu fayl GitHub'ga
+yuklanmaydi.
+
 ### 2-qadam — Mini App
 
 Botdagi «💈 Bron qilish» tugmasi ishlashi uchun https havola kerak.

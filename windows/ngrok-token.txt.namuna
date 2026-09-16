@@ -1,0 +1,11 @@
+# Ngrok authtoken
+#
+# Olish: https://dashboard.ngrok.com/get-started/your-authtoken
+#
+# Ishlatish:
+#   1. Shu faylning nomini "ngrok-token.txt" ga o'zgartiring
+#      (oxiridagi ".namuna" ni olib tashlang)
+#   2. Pastdagi qatorga tokeningizni yozing (# belgisisiz)
+#   3. NGROK.bat ni oching - token so'ralmaydi
+#
+# Bu fayl GitHub'ga yuklanmaydi.
