@@ -32,7 +32,7 @@ function createApp() {
         // Telegram Mini App va ngrok so'rovlarida origin bo'lmasligi mumkin
         if (!origin) return callback(null, true);
         if (config.cors.origins.includes(origin)) return callback(null, true);
-        if (/^https:\/\/[\w-]+\.(ngrok-free\.app|ngrok\.io|ngrok-free\.dev|trycloudflare\.com|vercel\.app)$/.test(origin)) {
+        if (/^https:\/\/[\w-]+\.(ngrok-free\.app|ngrok\.io|ngrok-free\.dev|trycloudflare\.com|vercel\.app|github\.io)$/.test(origin)) {
           return callback(null, true);
         }
         return callback(null, false);
