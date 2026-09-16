@@ -5,9 +5,11 @@
 
 const webApp = typeof window !== 'undefined' ? window.Telegram?.WebApp : null;
 
-// Telegram ishga tushirish ma'lumotlarini manzil "#" qismida uzatadi.
-// HashRouter uni almashtirib yuborishidan oldin saqlab qolamiz.
-const launchUrl = typeof window !== 'undefined' ? window.location.href : '';
+// Telegram ishga tushirish ma'lumotlarini manzil "#" qismida uzatadi, so'ng
+// SDK ularni o'qib, manzildan tozalab yuboradi. index.html dagi kichik skript
+// manzilni SDK'dan oldin saqlab qoladi — shu nusxa ustuvor.
+const launchUrl =
+  typeof window !== 'undefined' ? window.__launchUrl || window.location.href : '';
 
 export const isTelegram = Boolean(webApp?.initData);
 
