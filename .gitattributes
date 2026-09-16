@@ -1,0 +1,16 @@
+# Windows fayllari har doim CRLF bo'lishi shart —
+# aks holda cmd.exe buyruqlarni noto'g'ri o'qiydi
+*.bat    text eol=crlf
+*.ps1    text eol=crlf
+*.cmd    text eol=crlf
+windows/*.txt      text eol=crlf
+windows/*.namuna   text eol=crlf
+
+# Qolgan hamma narsa LF
+*.js     text eol=lf
+*.jsx    text eol=lf
+*.json   text eol=lf
+*.css    text eol=lf
+*.html   text eol=lf
+*.md     text eol=lf
+*.prisma text eol=lf

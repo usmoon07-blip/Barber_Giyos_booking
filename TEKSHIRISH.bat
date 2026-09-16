@@ -1,28 +1,22 @@
 @echo off
 chcp 65001 >nul
 title G'iyos Barbershop - Tekshiruv
-cd /d "%~dp0"
 
-where node >nul 2>nul
-if errorlevel 1 (
-  set "PATH=%PATH%;%ProgramFiles%\nodejs\;%LOCALAPPDATA%\Programs\nodejs\"
-)
+if not exist "%~dp0windows\tekshirish.ps1" goto NOFILES
 
-where node >nul 2>nul
-if errorlevel 1 (
-  echo.
-  echo   ❌ Node.js o'rnatilmagan.
-  echo.
-  echo   👉 Avval BOSHLASH.bat faylini oching.
-  echo.
-  pause
-  exit /b 1
-)
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0windows\tekshirish.ps1"
+if errorlevel 1 pause
+exit /b
 
-node "windows\doctor.js"
-
+:NOFILES
 echo.
-echo   Yuqorida ❌ belgisi bo'lsa, yonidagi 👉 ni bajaring.
-echo   Tushunarsiz bo'lsa - shu oynaning rasmini yuboring.
+echo   Loyiha fayllari topilmadi.
+echo.
+echo   ZIP faylni avval CHIQARING:
+echo.
+echo     1. ZIP fayl ustiga ong tugma bilan bosing
+echo     2. "Extract All..." ni tanlang
+echo     3. "Extract" tugmasini bosing
+echo     4. Ochilgan papkadagi TEKSHIRISH.bat ni ikki marta bosing
 echo.
 pause
