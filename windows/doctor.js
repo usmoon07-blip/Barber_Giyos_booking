@@ -119,13 +119,14 @@ async function checkEnv(env) {
     warn(
       'Mini App havolasi yo’q',
       'botdagi "Bron qilish" tugmasi hali ishlamaydi',
-      '4-NGROK.bat ni ishga tushiring, bergan https havolasini .env dagi MINIAPP_URL ga yozing.'
+      'NGROK.bat ni ishga tushiring (ngrok bloklangan bo’lsa — CLOUDFLARE.bat), ' +
+        'bergan https havolasini .env dagi MINIAPP_URL ga yozing.'
     );
   } else if (!env.MINIAPP_URL.startsWith('https://')) {
     fail(
       'Mini App havolasi noto’g’ri',
       `hozir: ${env.MINIAPP_URL}`,
-      'Havola albatta https:// bilan boshlanishi kerak (ngrok bergan manzil).'
+      'Havola albatta https:// bilan boshlanishi kerak (ngrok yoki cloudflared bergan manzil).'
     );
   } else {
     ok('Mini App havolasi', env.MINIAPP_URL);

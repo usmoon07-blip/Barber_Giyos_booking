@@ -257,6 +257,31 @@ Odatda ngrok havolasi har safar o'zgaradi. Buni bir marta hal qilish mumkin:
 > Shunda `.env` dagi `MINIAPP_URL` ni yangilab, serverni qayta ishga tushiring
 > va BotFather'dagi havolani ham yangilang.
 
+### Ngrok ochilmasa / hisob yaratib bo'lmasa
+
+Ba'zi mamlakatlarda ngrok.com internet provayder darajasida bloklangan
+bo'ladi — shunda saytga umuman kirib bo'lmaydi yoki hisob ochish
+"bloklandi" degan xato bilan tugaydi. Bu Windows yoki loyihaning
+muammosi emas.
+
+Yechim — **`CLOUDFLARE.bat`**. U xuddi ngrok kabi https havola beradi,
+lekin:
+
+- Hisob va ro'yxatdan o'tish **shart emas**
+- Loyiha papkasida `CLOUDFLARE.bat` ni ikki marta bosing
+- Kerakli dastur (`cloudflared.exe`) o'zi yuklab olinadi
+- Ochilgan oynada `https://...trycloudflare.com` havolasi chiqadi —
+  uni nusxalab, so'ralganda qo'yasiz. Qolganini dastur o'zi bajaradi
+  (`.env` ga yozadi)
+
+Davomi xuddi ngrok'dagidek: BotFather'da Menu Button'ni shu havolaga
+sozlaysiz.
+
+> Cloudflare'ning bepul "quick tunnel" havolasi ham har safar o'zgaradi
+> (ngrok'dagi kabi). Buni butunlay bartaraf etish uchun quyidagi
+> **Bulutga joylashtirish** bo'limiga o'ting — u yerda havola umuman
+> o'zgarmaydi.
+
 ---
 
 ## ☁️ 3.5. Bulutga joylashtirish — kompyuter o'chsa ham ishlashi uchun
