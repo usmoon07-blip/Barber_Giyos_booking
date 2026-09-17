@@ -28,6 +28,7 @@ function createBot() {
   bot.command('language', (ctx) => botController.handleLanguageMenu(ctx));
 
   bot.on('contact', (ctx) => botController.handleContact(ctx));
+  bot.on('photo', (ctx) => botController.handleReceipt(ctx));
 
   bot.action(/^lang:(uz|ru)$/, (ctx) => botController.handleLanguageCallback(ctx, ctx.match[1]));
   bot.action(/^otw:(\d+)$/, (ctx) => botController.handleOnTheWay(ctx, Number(ctx.match[1])));

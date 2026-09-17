@@ -70,7 +70,13 @@ const messages = {
     cardDetails: '💳 <b>Karta orqali to\'lash</b>',
     cardNumberLabel: 'Karta raqami',
     cardHolderLabel: 'Karta egasi',
-    cardHint: "To'lovni tashrif oldidan yoki sartaroshxonada amalga oshirishingiz mumkin.",
+    cardHint:
+      "To'lovni tashrif oldidan yoki sartaroshxonada amalga oshirishingiz mumkin.\n" +
+      "To'laganingizdan so'ng chek rasmini shu yerga yuboring.",
+    receiptSaved: "✅ Chek qabul qilindi! Sartarosh tekshirib, to'lovni tasdiqlaydi.",
+    receiptNoBooking:
+      "Hozircha to'lov kutilayotgan broningiz yo'q.\n" +
+      'Avval «💈 Bron qilish» orqali bron qiling, so\'ng chekni yuboring.',
     seeYouSoon: 'Sizni belgilangan vaqtda kutamiz!',
     onTheWayButton: '🚗 Yo\'lga tushdim',
     cancelButton: '❌ Bekor qilish',
@@ -154,7 +160,13 @@ const messages = {
     cardDetails: '💳 <b>Оплата картой</b>',
     cardNumberLabel: 'Номер карты',
     cardHolderLabel: 'Владелец карты',
-    cardHint: 'Оплатить можно заранее или в барбершопе.',
+    cardHint:
+      'Оплатить можно заранее или в барбершопе.\n' +
+      'После оплаты отправьте сюда фото чека.',
+    receiptSaved: '✅ Чек получен! Барбер проверит и подтвердит оплату.',
+    receiptNoBooking:
+      'Сейчас нет записи, ожидающей оплаты.\n' +
+      'Сначала запишитесь через «💈 Записаться», затем отправьте чек.',
     seeYouSoon: 'Ждём вас в назначенное время!',
     onTheWayButton: '🚗 Я в пути',
     cancelButton: '❌ Отменить',

@@ -281,6 +281,28 @@ const botController = {
     }
   },
 
+  /** 🧾 Mijoz to'lov chekining rasmini yuborganda */
+  async handleReceipt(ctx) {
+    const user = await resolveUser(ctx);
+    const text = t(user.language);
+
+    const appointment = await AppointmentModel.findAwaitingReceipt(user.id);
+
+    if (!appointment) {
+      await ctx.reply(text.receiptNoBooking, mainKeyboard(user.language));
+      return;
+    }
+
+    // Telegram rasmni bir necha o'lchamda yuboradi — eng sifatlisi oxirgisi
+    const sizes = ctx.message.photo;
+    const fileId = sizes[sizes.length - 1].file_id;
+
+    const updated = await AppointmentModel.attachReceipt(appointment.id, fileId);
+
+    await ctx.reply(text.receiptSaved, mainKeyboard(user.language));
+    await NotificationService.notifyAdminsReceipt(updated);
+  },
+
   /** 🚗 "Yo'lga tushdim" tugmasi */
   async handleOnTheWay(ctx, appointmentId) {
     const user = await resolveUser(ctx);

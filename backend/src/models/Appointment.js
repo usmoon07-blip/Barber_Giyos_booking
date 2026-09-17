@@ -95,6 +95,30 @@ const AppointmentModel = {
     });
   },
 
+  /**
+   * Mijoz chek yuborganda uni qaysi bronga bog'lashni aniqlaydi:
+   * hali to'lanmagan, bekor qilinmagan va eng yaqin kundagi bron.
+   */
+  findAwaitingReceipt(userId) {
+    return prisma.appointment.findFirst({
+      where: {
+        userId: Number(userId),
+        status: { in: ACTIVE_STATUSES },
+        isPaid: false,
+      },
+      orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
+      include: FULL_INCLUDE,
+    });
+  },
+
+  attachReceipt(id, fileId) {
+    return prisma.appointment.update({
+      where: { id: Number(id) },
+      data: { receiptFileId: fileId, receiptSentAt: new Date() },
+      include: FULL_INCLUDE,
+    });
+  },
+
   setPaymentMethod(id, paymentMethod) {
     return prisma.appointment.update({
       where: { id: Number(id) },

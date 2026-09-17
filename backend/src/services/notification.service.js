@@ -30,6 +30,19 @@ async function sendMessage(chatId, text, extra = {}) {
   }
 }
 
+async function sendPhoto(chatId, fileId, caption) {
+  if (!botInstance || !chatId) return null;
+  try {
+    return await botInstance.telegram.sendPhoto(chatId, fileId, {
+      caption,
+      parse_mode: 'HTML',
+    });
+  } catch (error) {
+    console.error(`[notify] ${chatId} ga rasm yuborilmadi:`, error.message);
+    return null;
+  }
+}
+
 /** Bron ma'lumotlarini chiroyli matnga aylantiradi. */
 function formatAppointment(appointment, lang = 'uz') {
   const text = t(lang);
@@ -114,6 +127,29 @@ const NotificationService = {
     ].join('\n');
 
     await Promise.all(config.bot.adminIds.map((chatId) => sendMessage(chatId, body)));
+  },
+
+  /** Mijoz to'lov chekini yuborganda adminlarga rasmni yetkazadi. */
+  async notifyAdminsReceipt(appointment) {
+    if (!config.bot.adminIds.length || !appointment.receiptFileId) return;
+
+    const clientName = [appointment.user.firstName, appointment.user.lastName].filter(Boolean).join(' ');
+    const username = appointment.user.username ? `\n🔗 @${appointment.user.username}` : '';
+
+    const caption = [
+      '🧾 <b>CHEK YUBORILDI</b>',
+      '',
+      `👤 <b>Mijoz:</b> ${clientName}`,
+      `📱 <b>Telefon:</b> ${appointment.user.phone || 'kiritilmagan'}${username}`,
+      '',
+      formatAppointment(appointment, 'uz'),
+      '',
+      `<i>Tekshirib, admin panelda «To'langan» deb belgilang (bron №${appointment.id}).</i>`,
+    ].join('\n');
+
+    await Promise.all(
+      config.bot.adminIds.map((chatId) => sendPhoto(chatId, appointment.receiptFileId, caption))
+    );
   },
 
   /** Mijoz "Yo'lga tushdim" bosganda adminlarga xabar. */

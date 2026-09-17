@@ -123,6 +123,8 @@ model Appointment {
   isPaid         Boolean           @default(false)
   paidAt         DateTime?
   note           String?
+  receiptFileId  String? // mijoz yuborgan chek rasmi (Telegram file_id)
+  receiptSentAt  DateTime?
   onTheWayAt     DateTime? // mijoz "Yo'lga tushdim" bosgan vaqt
   reminderSentAt DateTime? // eslatma yuborilgan vaqt
   createdAt      DateTime          @default(now())

@@ -293,6 +293,14 @@ export default function Appointments() {
                         >
                           {appointment.isPaid ? "✅ To'langan" : "⏳ To'lanmagan"}
                         </button>
+                        {appointment.receiptSentAt ? (
+                          <div
+                            style={{ marginTop: 6, fontSize: 12 }}
+                            title="Mijoz chek rasmini botga yubordi — u Telegramda sizga kelgan"
+                          >
+                            🧾 Chek yuborilgan
+                          </div>
+                        ) : null}
                       </td>
                       <td>
                         <span className={`status status--${appointment.status}`}>
