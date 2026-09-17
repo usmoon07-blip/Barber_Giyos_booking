@@ -317,6 +317,19 @@ const adminController = {
       sortOrder: toInt(sortOrder, 0),
     });
 
+    // Ish vaqtisiz barberga bo'sh vaqt topilmaydi va uni bron qilib
+    // bo'lmaydi, shuning uchun standart jadval darhol yaratiladi.
+    await prisma.workingHour.createMany({
+      data: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({
+        barberId: barber.id,
+        weekday,
+        startTime: '09:00',
+        endTime: '20:00',
+        isWorking: true,
+      })),
+      skipDuplicates: true,
+    });
+
     res.status(201).json({ ok: true, data: barber });
   }),
 
@@ -340,9 +353,14 @@ const adminController = {
   }),
 
   deleteBarber: asyncHandler(async (req, res) => {
-    const activeCount = await prisma.appointment.count({
-      where: { barberId: toInt(req.params.id), status: { in: ['PENDING', 'CONFIRMED'] } },
-    });
+    const barberId = toInt(req.params.id);
+
+    const [activeCount, totalCount] = await Promise.all([
+      prisma.appointment.count({
+        where: { barberId, status: { in: ['PENDING', 'CONFIRMED'] } },
+      }),
+      prisma.appointment.count({ where: { barberId } }),
+    ]);
 
     if (activeCount > 0) {
       throw ApiError.conflict(
@@ -351,7 +369,18 @@ const adminController = {
       );
     }
 
-    await BarberModel.remove(req.params.id);
+    // Bron tarixi hisobotlarda ishlatiladi, shuning uchun baza barberni
+    // o'chirishga yo'l qo'ymaydi. Uni "faol emas" qilish to'g'ri yechim.
+    if (totalCount > 0) {
+      throw ApiError.conflict(
+        `Bu barberda ${totalCount} ta bron tarixi bor, shuning uchun butunlay o'chirib ` +
+          "bo'lmaydi (hisobotlar buziladi). Uni tahrirlab, «Faol» belgisini olib tashlang — " +
+          'mijozlarga ko\'rinmay qoladi. Yoki avval Bronlar bo\'limidan o\'sha bronlarni o\'chiring.',
+        'HAS_APPOINTMENT_HISTORY'
+      );
+    }
+
+    await BarberModel.remove(barberId);
     res.json({ ok: true });
   }),
 

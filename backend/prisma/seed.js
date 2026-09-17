@@ -151,15 +151,18 @@ async function seedSettings() {
 }
 
 async function seedBarbers() {
+  // Namunaviy barberlar FAQAT bo'sh bazaga qo'shiladi. Aks holda egasi
+  // o'chirgan namunaviy barberlar har qayta ishga tushirishda qaytib kelardi.
+  if ((await prisma.barber.count()) > 0) {
+    console.log("✅ Barberlar mavjud — namunaviylar qo'shilmadi");
+    return;
+  }
+
   let created = 0;
 
   for (const barber of BARBERS) {
-    const existing = await prisma.barber.findFirst({ where: { name: barber.name } });
-
-    // Mavjud barberni qayta yozmaymiz — admin panelda tahrirlangan
-    // ism, rasm yoki tavsifni bosib o'tib ketmasligi uchun.
-    const record = existing || (await prisma.barber.create({ data: barber }));
-    if (!existing) created += 1;
+    const record = await prisma.barber.create({ data: barber });
+    created += 1;
 
     for (const weekday of WEEKDAYS) {
       await prisma.workingHour.upsert({
@@ -179,20 +182,18 @@ async function seedBarbers() {
 }
 
 async function seedServices() {
-  let created = 0;
-
-  for (const service of SERVICES) {
-    const existing = await prisma.service.findFirst({ where: { name: service.name } });
-
-    // Mavjud xizmatni qayta yozmaymiz — admin panelda o'zgartirilgan
-    // narx yoki tavsifni har ishga tushirishda bosib o'tib ketmasligi uchun.
-    if (!existing) {
-      await prisma.service.create({ data: service });
-      created += 1;
-    }
+  // Barberlardagi kabi — o'chirilgan namunaviy xizmatlar qaytib kelmasligi
+  // uchun faqat bo'sh bazaga qo'shiladi.
+  if ((await prisma.service.count()) > 0) {
+    console.log("✅ Xizmatlar mavjud — namunaviylar qo'shilmadi");
+    return;
   }
 
-  console.log(created ? `✅ ${created} ta yangi xizmat qo'shildi` : "✅ Xizmatlar allaqachon mavjud, o'zgartirilmadi");
+  for (const service of SERVICES) {
+    await prisma.service.create({ data: service });
+  }
+
+  console.log(`✅ ${SERVICES.length} ta namunaviy xizmat qo'shildi`);
 }
 
 async function main() {
